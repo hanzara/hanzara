@@ -1,31 +1,32 @@
-# Create an empty list called my_list
-my_list = []
-print(f"Initial list: {my_list}")
+def calculate_discount(price, discount_percent):
+  """Calculates the final price after applying a discount if it's 20% or higher.
 
-# Append the following elements to my_list: 10, 20, 30, 40
-my_list.append(10)
-my_list.append(20)
-my_list.append(30)
-my_list.append(40)
-print(f"List after appending: {my_list}")
+  Args:
+    price: The original price of the item (float or int).
+    discount_percent: The discount percentage (float or int).
 
-# Insert the value 15 at the second position in the list
-my_list.insert(1, 15)  # Index 1 represents the second position
-print(f"List after inserting 15 at the second position: {my_list}")
+  Returns:
+    The final price after discount, or the original price if the discount is less than 20%.
+  """
+  if discount_percent >= 20:
+    discount_amount = (discount_percent / 100) * price
+    final_price = price - discount_amount
+    return final_price
+  else:
+    return price
 
-# Extend my_list with another list: [50, 60, 70]
-another_list = [50, 60, 70]
-my_list.extend(another_list)
-print(f"List after extending with [50, 60, 70]: {my_list}")
+# Get user input
+try:
+  original_price = float(input("Enter the original price of the item: "))
+  discount = float(input("Enter the discount percentage: "))
 
-# Remove the last element from my_list
-my_list.pop()
-print(f"List after removing the last element: {my_list}")
+  # Calculate and print the final price
+  final_price = calculate_discount(original_price, discount)
 
-# Sort my_list in ascending order
-my_list.sort()
-print(f"List after sorting in ascending order: {my_list}")
+  if final_price == original_price:
+    print(f"No discount applied. The final price is: {original_price:.2f} KES")
+  else:
+    print(f"Discount applied! The final price is: {final_price:.2f} KES")
 
-# Find and print the index of the value 30 in my_list
-index_of_30 = my_list.index(30)
-print(f"The index of the value 30 in my_list is: {index_of_30}")
+except ValueError:
+  print("Invalid input. Please enter numeric values for price and discount.")
