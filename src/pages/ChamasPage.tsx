@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from 'react-router-dom';
 import CurrencyDisplay from '@/components/CurrencyDisplay';
 import Navigation from '@/components/Navigation';
 
 const ChamasPage: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newChama, setNewChama] = useState({
     name: '',
@@ -80,6 +81,10 @@ const ChamasPage: React.FC = () => {
       title: "Join Request Sent",
       description: `Your request to join ${chamaName} has been sent`,
     });
+  };
+
+  const handleViewDetails = (chamaId: string) => {
+    navigate(`/chama/${chamaId}`);
   };
 
   return (
@@ -196,7 +201,11 @@ const ChamasPage: React.FC = () => {
                         </CardTitle>
                         <CardDescription>{chama.description}</CardDescription>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewDetails(chama.id)}
+                      >
                         View Details
                       </Button>
                     </div>
