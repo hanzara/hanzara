@@ -19,8 +19,7 @@ const CreateChamaPage = () => {
     description: '',
     contribution_amount: '',
     contribution_frequency: 'monthly',
-    max_members: '20',
-    joining_fee: '0'
+    max_members: '20'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +32,6 @@ const CreateChamaPage = () => {
         contribution_amount: parseFloat(formData.contribution_amount),
         contribution_frequency: formData.contribution_frequency,
         max_members: parseInt(formData.max_members),
-        joining_fee: parseFloat(formData.joining_fee) || 0,
         status: 'active'
       });
       
@@ -132,28 +130,15 @@ const CreateChamaPage = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="maxMembers">Maximum Members</Label>
-                    <Input
-                      id="maxMembers"
-                      type="number"
-                      value={formData.max_members}
-                      onChange={(e) => handleInputChange('max_members', e.target.value)}
-                      placeholder="20"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="joiningFee">Joining Fee (KES)</Label>
-                    <Input
-                      id="joiningFee"
-                      type="number"
-                      value={formData.joining_fee}
-                      onChange={(e) => handleInputChange('joining_fee', e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="maxMembers">Maximum Members</Label>
+                  <Input
+                    id="maxMembers"
+                    type="number"
+                    value={formData.max_members}
+                    onChange={(e) => handleInputChange('max_members', e.target.value)}
+                    placeholder="20"
+                  />
                 </div>
 
                 <div className="flex gap-4 pt-4">

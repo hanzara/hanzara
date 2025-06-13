@@ -8,6 +8,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import ChamasPage from "./pages/ChamasPage";
 import AdvancedChamaPage from "./pages/AdvancedChamaPage";
+import CreateChamaPage from "./pages/CreateChamaPage";
+import InviteMembersPage from "./pages/InviteMembersPage";
+import MakeContributionPage from "./pages/MakeContributionPage";
+import SchedulePaymentPage from "./pages/SchedulePaymentPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
