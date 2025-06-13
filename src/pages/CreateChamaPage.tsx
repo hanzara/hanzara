@@ -31,8 +31,7 @@ const CreateChamaPage = () => {
         description: formData.description,
         contribution_amount: parseFloat(formData.contribution_amount),
         contribution_frequency: formData.contribution_frequency,
-        max_members: parseInt(formData.max_members),
-        status: 'active'
+        max_members: parseInt(formData.max_members)
       });
       
       navigate('/chamas');
