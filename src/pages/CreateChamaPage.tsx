@@ -11,12 +11,13 @@ import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { useCreateChama } from '@/hooks/useChamas';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const CreateChamaPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const createChama = useCreateChama();
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -28,6 +29,18 @@ const CreateChamaPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    console.log('User authenticated:', !!user);
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a chama.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!formData.name || !formData.contribution_amount) {
       toast({
         title: "Missing Information",
@@ -37,45 +50,39 @@ const CreateChamaPage = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    
     try {
-      console.log('Creating chama with data:', formData);
+      console.log('Attempting to create chama...');
       
-      await createChama.mutateAsync({
-        name: formData.name,
-        description: formData.description,
+      const chamaData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
         contribution_amount: parseFloat(formData.contribution_amount),
         contribution_frequency: formData.contribution_frequency,
         max_members: parseInt(formData.max_members)
-      });
+      };
+
+      console.log('Processed chama data:', chamaData);
       
-      console.log('Chama created successfully');
-      toast({
-        title: "Success!",
-        description: "Your chama has been created successfully.",
-      });
+      await createChama.mutateAsync(chamaData);
       
-      // Small delay to show success message before navigation
+      console.log('Chama created successfully, navigating...');
+      
+      // Navigate to chamas page after successful creation
       setTimeout(() => {
         navigate('/chamas');
       }, 1000);
       
     } catch (error) {
-      console.error('Error creating chama:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create chama. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error in handleSubmit:', error);
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
+    console.log(`Updating ${field} to:`, value);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const isLoading = createChama.isPending;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -88,7 +95,7 @@ const CreateChamaPage = () => {
               variant="outline" 
               size="icon"
               onClick={() => navigate(-1)}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -118,7 +125,7 @@ const CreateChamaPage = () => {
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="Enter chama name"
                     required
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -130,7 +137,7 @@ const CreateChamaPage = () => {
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="Describe the purpose and goals of your chama"
                     rows={3}
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -144,7 +151,7 @@ const CreateChamaPage = () => {
                       onChange={(e) => handleInputChange('contribution_amount', e.target.value)}
                       placeholder="5000"
                       required
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                       min="1"
                     />
                   </div>
@@ -154,7 +161,7 @@ const CreateChamaPage = () => {
                     <Select 
                       value={formData.contribution_frequency} 
                       onValueChange={(value) => handleInputChange('contribution_frequency', value)}
-                      disabled={isSubmitting}
+                      disabled={isLoading}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -176,7 +183,7 @@ const CreateChamaPage = () => {
                     value={formData.max_members}
                     onChange={(e) => handleInputChange('max_members', e.target.value)}
                     placeholder="20"
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                     min="2"
                     max="100"
                   />
@@ -188,16 +195,16 @@ const CreateChamaPage = () => {
                     variant="outline" 
                     onClick={() => navigate(-1)}
                     className="flex-1"
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     className="flex-1"
-                    disabled={isSubmitting || !formData.name || !formData.contribution_amount}
+                    disabled={isLoading || !formData.name || !formData.contribution_amount}
                   >
-                    {isSubmitting ? (
+                    {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Creating...

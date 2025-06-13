@@ -22,9 +22,7 @@ export const useChamas = () => {
         .from('chamas')
         .select(`
           *,
-          chama_members!inner(role, is_active),
-          chama_contributions(amount, status),
-          chama_loans(amount, status)
+          chama_members!inner(role, is_active)
         `)
         .eq('chama_members.user_id', user.id)
         .eq('chama_members.is_active', true);
@@ -58,7 +56,11 @@ export const useCreateChama = () => {
       const { data: chama, error: chamaError } = await supabase
         .from('chamas')
         .insert({
-          ...chamaData,
+          name: chamaData.name,
+          description: chamaData.description,
+          contribution_amount: chamaData.contribution_amount,
+          contribution_frequency: chamaData.contribution_frequency || 'monthly',
+          max_members: chamaData.max_members || 50,
           created_by: user.id,
         })
         .select()
@@ -92,8 +94,8 @@ export const useCreateChama = () => {
       console.log('Chama creation successful:', data);
       queryClient.invalidateQueries({ queryKey: ['chamas'] });
       toast({
-        title: "Chama Created!",
-        description: "Your new Chama has been created successfully.",
+        title: "Success!",
+        description: "Your chama has been created successfully.",
       });
     },
     onError: (error: any) => {
