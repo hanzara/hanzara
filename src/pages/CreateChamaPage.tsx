@@ -6,14 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { useCreateChama } from '@/hooks/useChamas';
+import { useToast } from '@/hooks/use-toast';
 
 const CreateChamaPage = () => {
   const navigate = useNavigate();
   const createChama = useCreateChama();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,7 +28,20 @@ const CreateChamaPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.name || !formData.contribution_amount) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
     try {
+      console.log('Creating chama with data:', formData);
+      
       await createChama.mutateAsync({
         name: formData.name,
         description: formData.description,
@@ -34,9 +50,26 @@ const CreateChamaPage = () => {
         max_members: parseInt(formData.max_members)
       });
       
-      navigate('/chamas');
+      console.log('Chama created successfully');
+      toast({
+        title: "Success!",
+        description: "Your chama has been created successfully.",
+      });
+      
+      // Small delay to show success message before navigation
+      setTimeout(() => {
+        navigate('/chamas');
+      }, 1000);
+      
     } catch (error) {
       console.error('Error creating chama:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create chama. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -55,6 +88,7 @@ const CreateChamaPage = () => {
               variant="outline" 
               size="icon"
               onClick={() => navigate(-1)}
+              disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -84,6 +118,7 @@ const CreateChamaPage = () => {
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="Enter chama name"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -95,6 +130,7 @@ const CreateChamaPage = () => {
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="Describe the purpose and goals of your chama"
                     rows={3}
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -108,6 +144,8 @@ const CreateChamaPage = () => {
                       onChange={(e) => handleInputChange('contribution_amount', e.target.value)}
                       placeholder="5000"
                       required
+                      disabled={isSubmitting}
+                      min="1"
                     />
                   </div>
 
@@ -116,6 +154,7 @@ const CreateChamaPage = () => {
                     <Select 
                       value={formData.contribution_frequency} 
                       onValueChange={(value) => handleInputChange('contribution_frequency', value)}
+                      disabled={isSubmitting}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -137,6 +176,9 @@ const CreateChamaPage = () => {
                     value={formData.max_members}
                     onChange={(e) => handleInputChange('max_members', e.target.value)}
                     placeholder="20"
+                    disabled={isSubmitting}
+                    min="2"
+                    max="100"
                   />
                 </div>
 
@@ -146,15 +188,23 @@ const CreateChamaPage = () => {
                     variant="outline" 
                     onClick={() => navigate(-1)}
                     className="flex-1"
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     className="flex-1"
-                    disabled={createChama.isPending}
+                    disabled={isSubmitting || !formData.name || !formData.contribution_amount}
                   >
-                    {createChama.isPending ? 'Creating...' : 'Create Chama'}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Chama'
+                    )}
                   </Button>
                 </div>
               </form>

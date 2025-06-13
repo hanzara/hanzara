@@ -16,18 +16,25 @@ export const useChamas = () => {
     queryFn: async () => {
       if (!user) return [];
 
+      console.log('Fetching chamas for user:', user.id);
+
       const { data, error } = await supabase
         .from('chamas')
         .select(`
           *,
           chama_members!inner(role, is_active),
-          contributions(amount, status),
-          loans(amount, status)
+          chama_contributions(amount, status),
+          chama_loans(amount, status)
         `)
         .eq('chama_members.user_id', user.id)
         .eq('chama_members.is_active', true);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching chamas:', error);
+        throw error;
+      }
+      
+      console.log('Fetched chamas:', data);
       return data || [];
     },
     enabled: !!user,
@@ -41,7 +48,11 @@ export const useCreateChama = () => {
 
   return useMutation({
     mutationFn: async (chamaData: Omit<ChamaInsert, 'created_by'>) => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Creating chama with data:', chamaData);
 
       // Create the chama
       const { data: chama, error: chamaError } = await supabase
@@ -53,7 +64,12 @@ export const useCreateChama = () => {
         .select()
         .single();
 
-      if (chamaError) throw chamaError;
+      if (chamaError) {
+        console.error('Error creating chama:', chamaError);
+        throw chamaError;
+      }
+
+      console.log('Chama created:', chama);
 
       // Add the creator as an admin member
       const { error: memberError } = await supabase
@@ -64,11 +80,16 @@ export const useCreateChama = () => {
           role: 'admin',
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error adding member:', memberError);
+        throw memberError;
+      }
 
+      console.log('Creator added as admin member');
       return chama;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Chama creation successful:', data);
       queryClient.invalidateQueries({ queryKey: ['chamas'] });
       toast({
         title: "Chama Created!",
@@ -76,9 +97,10 @@ export const useCreateChama = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Chama creation failed:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to create chama. Please try again.",
         variant: "destructive",
       });
     },

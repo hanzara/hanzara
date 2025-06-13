@@ -14,18 +14,24 @@ import MakeContributionPage from "./pages/MakeContributionPage";
 import SchedulePaymentPage from "./pages/SchedulePaymentPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { useState } from "react";
 
 const App = () => {
   console.log('App component rendering');
+  
+  // Create QueryClient instance inside component to avoid React hook issues
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 2,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+      mutations: {
+        retry: 1,
+      },
+    },
+  }));
   
   return (
     <QueryClientProvider client={queryClient}>
