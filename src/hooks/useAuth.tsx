@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [supabaseConnected, setSupabaseConnected] = useState(false);
+  const [supabaseConnected, setSupabaseConnected] = useState(true); // Default to true since we have credentials
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,12 +30,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSupabaseConnected(connected);
       
       if (!connected) {
-        console.warn('Supabase not properly connected. Authentication features will be limited.');
-        setLoading(false);
-        return;
+        console.warn('Supabase connection test failed, but continuing with auth setup');
       }
 
-      // Get initial session only if connected
+      // Get initial session
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
@@ -48,57 +46,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     checkConnection();
 
-    // Listen for auth changes only if Supabase is connected
-    let subscription: any;
-    
-    if (supabaseConnected) {
-      const {
-        data: { subscription: authSubscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
 
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Create or update profile
-          try {
-            const { error } = await supabase
-              .from('profiles')
-              .upsert({
-                id: session.user.id,
-                full_name: session.user.user_metadata.full_name || '',
-                updated_at: new Date().toISOString(),
-              });
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Create or update profile
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .upsert({
+              id: session.user.id,
+              full_name: session.user.user_metadata.full_name || '',
+              updated_at: new Date().toISOString(),
+            });
 
-            if (error) {
-              console.error('Error updating profile:', error);
-            }
-          } catch (err) {
-            console.error('Profile update failed:', err);
+          if (error) {
+            console.error('Error updating profile:', error);
           }
+        } catch (err) {
+          console.error('Profile update failed:', err);
         }
-      });
-      
-      subscription = authSubscription;
-    }
+      }
+    });
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      subscription.unsubscribe();
     };
-  }, [supabaseConnected]);
+  }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    if (!supabaseConnected) {
-      toast({
-        title: "Connection Error",
-        description: "Supabase is not properly configured. Please check your environment setup.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -127,15 +108,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    if (!supabaseConnected) {
-      toast({
-        title: "Connection Error",
-        description: "Supabase is not properly configured. Please check your environment setup.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -159,15 +131,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    if (!supabaseConnected) {
-      toast({
-        title: "Connection Error",
-        description: "Supabase is not properly configured.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;

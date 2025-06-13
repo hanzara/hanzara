@@ -2,27 +2,15 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Use the actual Supabase project credentials
+const supabaseUrl = 'https://yrywjbxqlqpdzrudfupm.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlyeXdqYnhxbHFwZHpydWRmdXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNjM0MTMsImV4cCI6MjA2MzYzOTQxM30.tHBkiztnuUhjLLwq1zraM0XpG1MvLPON40m3jdNIEkI';
 
-console.log('Environment check:');
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key exists:', !!supabaseAnonKey);
-console.log('All env vars:', import.meta.env);
+console.log('Supabase configuration:');
+console.log('URL:', supabaseUrl);
+console.log('Key configured:', !!supabaseAnonKey);
 
-// Temporary fallback for development - this will be replaced with actual values
-const fallbackUrl = 'https://placeholder.supabase.co';
-const fallbackKey = 'placeholder-key';
-
-const finalUrl = supabaseUrl || fallbackUrl;
-const finalKey = supabaseAnonKey || fallbackKey;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase environment variables not found. Using fallback values.');
-  console.warn('Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your Supabase integration.');
-}
-
-export const supabase = createClient<Database>(finalUrl, finalKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 // Test connection function
 export const testSupabaseConnection = async () => {

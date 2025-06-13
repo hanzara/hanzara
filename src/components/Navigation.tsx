@@ -1,27 +1,18 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Users, DollarSign, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
+import { Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from './AuthModal';
 
 const Navigation = () => {
-  const { user, signOut, supabaseConnected } = useAuth();
+  const { user, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
     <>
       <nav className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          {!supabaseConnected && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <span className="text-sm text-amber-800">
-                Supabase connection not configured. Please set up your environment variables.
-              </span>
-            </div>
-          )}
-          
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <div className="flex items-center space-x-2">
@@ -33,7 +24,7 @@ const Navigation = () => {
                 </span>
               </div>
               
-              {user && supabaseConnected && (
+              {user && (
                 <div className="hidden md:flex items-center space-x-6">
                   <Button variant="ghost" className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
@@ -56,7 +47,7 @@ const Navigation = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              {user && supabaseConnected ? (
+              {user ? (
                 <>
                   <span className="text-sm text-muted-foreground">
                     Welcome, {user.user_metadata?.full_name || user.email}
@@ -70,14 +61,12 @@ const Navigation = () => {
                   <Button 
                     variant="outline" 
                     onClick={() => setShowAuthModal(true)}
-                    disabled={!supabaseConnected}
                   >
                     Login
                   </Button>
                   <Button 
                     className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
                     onClick={() => setShowAuthModal(true)}
-                    disabled={!supabaseConnected}
                   >
                     Get Started
                   </Button>
