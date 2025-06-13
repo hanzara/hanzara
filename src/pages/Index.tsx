@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Plus, Calendar, DollarSign, TrendingUp } from 'lucide-react';
 import CurrencyDisplay from '@/components/CurrencyDisplay';
 import Navigation from '@/components/Navigation';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
+
   const upcomingContributions = [
     { chama: 'Unity Savings Group', amount: 5000, date: '2024-01-15', status: 'pending' },
     { chama: 'School Fees Chama', amount: 3000, date: '2024-01-12', status: 'due' }
@@ -18,6 +20,28 @@ const Index = () => {
     { type: 'payout', chama: 'School Fees Chama', amount: 24000, date: '2023-12-10' },
     { type: 'joined', chama: 'Tech Entrepreneurs Chama', date: '2023-12-05' }
   ];
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'create-chama':
+        navigate('/create-chama');
+        break;
+      case 'invite-members':
+        navigate('/invite-members');
+        break;
+      case 'make-contribution':
+        navigate('/make-contribution');
+        break;
+      case 'schedule-payment':
+        navigate('/schedule-payment');
+        break;
+      case 'view-analytics':
+        navigate('/analytics');
+        break;
+      default:
+        console.log('Unknown action:', action);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -158,23 +182,43 @@ const Index = () => {
               <CardDescription>What would you like to do today?</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('create-chama')}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create New Chama
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('invite-members')}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Invite Members
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('make-contribution')}
+              >
                 <DollarSign className="h-4 w-4 mr-2" />
                 Make Contribution
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('schedule-payment')}
+              >
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule Payment
               </Button>
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => handleQuickAction('view-analytics')}
+              >
                 <TrendingUp className="h-4 w-4 mr-2" />
                 View Analytics
               </Button>
