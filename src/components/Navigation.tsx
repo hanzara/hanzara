@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from './AuthModal';
@@ -10,6 +11,7 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -90,7 +92,18 @@ const Navigation = () => {
                 </Button>
               </div>
             ) : (
-              <AuthModal />
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setAuthModalOpen(true)}
+                >
+                  Sign In
+                </Button>
+                <AuthModal 
+                  open={authModalOpen} 
+                  onOpenChange={setAuthModalOpen} 
+                />
+              </>
             )}
           </div>
         </div>
