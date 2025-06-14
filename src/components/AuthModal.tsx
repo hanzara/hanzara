@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   const { signIn, signUp, loading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,26 +25,41 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     try {
       await signIn(formData.email, formData.password);
       onOpenChange(false);
+      setFormData({ email: '', password: '', fullName: '', confirmPassword: '' });
     } catch (error) {
       // Error is handled in the auth hook
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     if (formData.password !== formData.confirmPassword) {
       return;
     }
+    
+    setIsSubmitting(true);
     try {
       await signUp(formData.email, formData.password, formData.fullName);
       onOpenChange(false);
+      setFormData({ email: '', password: '', fullName: '', confirmPassword: '' });
     } catch (error) {
       // Error is handled in the auth hook
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const isLoading = loading || isSubmitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -56,8 +73,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin" disabled={isLoading}>Sign In</TabsTrigger>
+            <TabsTrigger value="signup" disabled={isLoading}>Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
@@ -69,6 +86,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -79,11 +97,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign In'}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </form>
           </TabsContent>
@@ -97,6 +123,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -107,6 +134,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -117,6 +145,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -127,11 +156,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  disabled={isLoading}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create Account'}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
               </Button>
             </form>
           </TabsContent>

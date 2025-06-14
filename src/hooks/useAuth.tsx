@@ -20,66 +20,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [supabaseConnected, setSupabaseConnected] = useState(true); // Default to true since we have credentials
+  const [supabaseConnected, setSupabaseConnected] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Test Supabase connection first
-    const checkConnection = async () => {
-      const { connected } = await testSupabaseConnection();
-      setSupabaseConnected(connected);
-      
-      if (!connected) {
-        console.warn('Supabase connection test failed, but continuing with auth setup');
-      }
+    let mounted = true;
 
-      // Get initial session
+    const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
+        // Test connection quickly
+        const { connected } = await testSupabaseConnection();
+        if (mounted) {
+          setSupabaseConnected(connected);
+        }
+
+        // Get initial session immediately
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (mounted && !error) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+        }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error('Auth initialization error:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     };
 
-    checkConnection();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      console.log('Auth state change:', event, session?.user?.email);
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
+      // Handle profile creation only after successful sign in
       if (event === 'SIGNED_IN' && session?.user) {
-        // Create or update profile
-        try {
-          const { error } = await supabase
-            .from('profiles')
-            .upsert({
-              id: session.user.id,
-              full_name: session.user.user_metadata.full_name || '',
-              updated_at: new Date().toISOString(),
-            });
+        setTimeout(async () => {
+          try {
+            const { error } = await supabase
+              .from('profiles')
+              .upsert({
+                id: session.user.id,
+                full_name: session.user.user_metadata.full_name || '',
+                updated_at: new Date().toISOString(),
+              });
 
-          if (error) {
-            console.error('Error updating profile:', error);
+            if (error && error.code !== '23505') { // Ignore duplicate key errors
+              console.error('Profile update error:', error);
+            }
+          } catch (err) {
+            console.error('Profile update failed:', err);
           }
-        } catch (err) {
-          console.error('Profile update failed:', err);
-        }
+        }, 0);
       }
     });
 
+    // Initialize auth
+    initializeAuth();
+
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -88,6 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           data: {
             full_name: fullName,
           },
+          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
@@ -98,16 +112,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Please check your email to verify your account.",
       });
     } catch (error: any) {
+      console.error('Sign up error:', error);
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -121,16 +139,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You have been signed in successfully.",
       });
     } catch (error: any) {
+      console.error('Sign in error:', error);
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
+    setLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -140,12 +162,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You have been signed out successfully.",
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
