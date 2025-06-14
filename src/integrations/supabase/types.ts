@@ -155,6 +155,50 @@ export type Database = {
           },
         ]
       }
+      chama_metrics: {
+        Row: {
+          average_repayment_performance: number | null
+          calculated_at: string | null
+          chama_id: string | null
+          created_at: string | null
+          id: string
+          net_worth: number | null
+          pending_votes_count: number | null
+          roi_percentage: number | null
+          upcoming_contributions_count: number | null
+        }
+        Insert: {
+          average_repayment_performance?: number | null
+          calculated_at?: string | null
+          chama_id?: string | null
+          created_at?: string | null
+          id?: string
+          net_worth?: number | null
+          pending_votes_count?: number | null
+          roi_percentage?: number | null
+          upcoming_contributions_count?: number | null
+        }
+        Update: {
+          average_repayment_performance?: number | null
+          calculated_at?: string | null
+          chama_id?: string | null
+          created_at?: string | null
+          id?: string
+          net_worth?: number | null
+          pending_votes_count?: number | null
+          roi_percentage?: number | null
+          upcoming_contributions_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chama_metrics_chama_id_fkey"
+            columns: ["chama_id"]
+            isOneToOne: false
+            referencedRelation: "chamas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chama_votes: {
         Row: {
           chama_id: string | null
@@ -626,6 +670,60 @@ export type Database = {
         }
         Relationships: []
       }
+      member_reputation: {
+        Row: {
+          chama_id: string | null
+          contribution_score: number | null
+          created_at: string | null
+          id: string
+          last_calculated: string | null
+          member_id: string | null
+          overall_score: number | null
+          participation_score: number | null
+          repayment_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          chama_id?: string | null
+          contribution_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_calculated?: string | null
+          member_id?: string | null
+          overall_score?: number | null
+          participation_score?: number | null
+          repayment_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          chama_id?: string | null
+          contribution_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_calculated?: string | null
+          member_id?: string | null
+          overall_score?: number | null
+          participation_score?: number | null
+          repayment_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_reputation_chama_id_fkey"
+            columns: ["chama_id"]
+            isOneToOne: false
+            referencedRelation: "chamas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_reputation_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "chama_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobile_money_accounts: {
         Row: {
           account_name: string | null
@@ -705,6 +803,7 @@ export type Database = {
           id: string
           loan_eligibility: number | null
           phone_number: string | null
+          preferred_language: string | null
           updated_at: string
           user_id: string
         }
@@ -717,6 +816,7 @@ export type Database = {
           id?: string
           loan_eligibility?: number | null
           phone_number?: string | null
+          preferred_language?: string | null
           updated_at?: string
           user_id: string
         }
@@ -729,6 +829,7 @@ export type Database = {
           id?: string
           loan_eligibility?: number | null
           phone_number?: string | null
+          preferred_language?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1381,6 +1482,38 @@ export type Database = {
         }
         Relationships: []
       }
+      vote_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          response: boolean
+          vote_id: string | null
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          response: boolean
+          vote_id?: string | null
+          voter_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          response?: boolean
+          vote_id?: string | null
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_responses_vote_id_fkey"
+            columns: ["vote_id"]
+            isOneToOne: false
+            referencedRelation: "chama_votes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_sponsors: {
         Row: {
           created_at: string | null
@@ -1463,6 +1596,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_member_reputation: {
+        Args: { member_chama_id: string; member_user_id: string }
+        Returns: undefined
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1470,6 +1607,10 @@ export type Database = {
       get_lender_average_rating: {
         Args: { lender_user_id: string }
         Returns: number
+      }
+      update_chama_metrics: {
+        Args: { target_chama_id: string }
+        Returns: undefined
       }
     }
     Enums: {

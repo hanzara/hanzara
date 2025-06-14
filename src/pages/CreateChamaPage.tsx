@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,14 @@ import Navigation from '@/components/Navigation';
 import { useCreateChama } from '@/hooks/useChamas';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CreateChamaPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const createChama = useCreateChama();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -67,7 +68,6 @@ const CreateChamaPage = () => {
       
       console.log('Chama created successfully, navigating...');
       
-      // Navigate to chamas page after successful creation
       setTimeout(() => {
         navigate('/chamas');
       }, 1000);
@@ -100,7 +100,7 @@ const CreateChamaPage = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Create New Chama</h1>
+              <h1 className="text-3xl font-bold">{t('chama.create', 'Create New Chama')}</h1>
               <p className="text-muted-foreground">Set up your savings group</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ const CreateChamaPage = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Chama Name *</Label>
+                  <Label htmlFor="name">{t('chama.name')} *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -130,7 +130,7 @@ const CreateChamaPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{t('chama.description')}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
@@ -143,7 +143,7 @@ const CreateChamaPage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="contribution">Monthly Contribution (KES) *</Label>
+                    <Label htmlFor="contribution">{t('chama.contribution.amount')} *</Label>
                     <Input
                       id="contribution"
                       type="number"
@@ -157,7 +157,7 @@ const CreateChamaPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="frequency">Contribution Frequency</Label>
+                    <Label htmlFor="frequency">{t('chama.frequency')}</Label>
                     <Select 
                       value={formData.contribution_frequency} 
                       onValueChange={(value) => handleInputChange('contribution_frequency', value)}
@@ -176,7 +176,7 @@ const CreateChamaPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="maxMembers">Maximum Members</Label>
+                  <Label htmlFor="maxMembers">{t('chama.max.members')}</Label>
                   <Input
                     id="maxMembers"
                     type="number"
@@ -197,7 +197,7 @@ const CreateChamaPage = () => {
                     className="flex-1"
                     disabled={isLoading}
                   >
-                    Cancel
+                    {t('chama.cancel')}
                   </Button>
                   <Button 
                     type="submit" 
@@ -210,7 +210,7 @@ const CreateChamaPage = () => {
                         Creating...
                       </>
                     ) : (
-                      'Create Chama'
+                      t('chama.create')
                     )}
                   </Button>
                 </div>
