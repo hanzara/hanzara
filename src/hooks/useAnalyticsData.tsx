@@ -90,15 +90,15 @@ export const useAnalyticsData = () => {
 
       // Process chama performance data
       const chamaPerformance = chamaMembers?.map(member => ({
-        name: member.chamas?.name || 'Unknown Chama',
+        name: (member.chamas as any)?.name || 'Unknown Chama',
         contributions: member.total_contributed || 0,
-        members: member.chamas?.current_members || 0
+        members: (member.chamas as any)?.current_members || 0
       })) || [];
 
       // Recent activities
       const recentActivities = contributions?.slice(-5).reverse().map(c => ({
         type: 'contribution',
-        description: `Contribution to ${c.chamas?.name}`,
+        description: `Contribution to ${(c.chamas as any)?.name || 'Unknown Chama'}`,
         amount: c.amount,
         date: c.contribution_date
       })) || [];
