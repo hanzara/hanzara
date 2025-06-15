@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader2 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -15,6 +16,7 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   const { signIn, signUp, loading } = useAuth();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -65,22 +67,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Join Chama Circle</DialogTitle>
+          <DialogTitle>{t('auth.join', 'Join Chama Circle')}</DialogTitle>
           <DialogDescription>
-            Sign in to manage your Chamas or create a new account
+            {t('auth.join.desc', 'Sign in to manage your Chamas or create a new account')}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin" disabled={isLoading}>Sign In</TabsTrigger>
-            <TabsTrigger value="signup" disabled={isLoading}>Sign Up</TabsTrigger>
+            <TabsTrigger value="signin" disabled={isLoading}>{t('auth.signIn', 'Sign In')}</TabsTrigger>
+            <TabsTrigger value="signup" disabled={isLoading}>{t('auth.signUp', 'Sign Up')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-email">{t('auth.email', 'Email')}</Label>
                 <Input
                   id="signin-email"
                   type="email"
@@ -91,7 +93,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="signin-password">Password</Label>
+                <Label htmlFor="signin-password">{t('auth.password', 'Password')}</Label>
                 <Input
                   id="signin-password"
                   type="password"
@@ -105,10 +107,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    {t('auth.signingIn.button', 'Signing in...')}
                   </>
                 ) : (
-                  'Sign In'
+                  t('auth.signIn.button', 'Sign In')
                 )}
               </Button>
             </form>
@@ -117,7 +119,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
-                <Label htmlFor="signup-name">Full Name</Label>
+                <Label htmlFor="signup-name">{t('auth.fullName', 'Full Name')}</Label>
                 <Input
                   id="signup-name"
                   type="text"
@@ -128,7 +130,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email">{t('auth.email', 'Email')}</Label>
                 <Input
                   id="signup-email"
                   type="email"
@@ -139,7 +141,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="signup-password">Password</Label>
+                <Label htmlFor="signup-password">{t('auth.password', 'Password')}</Label>
                 <Input
                   id="signup-password"
                   type="password"
@@ -150,7 +152,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 />
               </div>
               <div>
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Label htmlFor="confirm-password">{t('auth.confirmPassword', 'Confirm Password')}</Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -164,10 +166,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    {t('auth.creatingAccount.button', 'Creating account...')}
                   </>
                 ) : (
-                  'Create Account'
+                  t('auth.createAccount.button', 'Create Account')
                 )}
               </Button>
             </form>

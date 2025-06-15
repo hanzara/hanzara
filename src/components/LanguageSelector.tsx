@@ -5,12 +5,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe } from 'lucide-react';
 
 const LanguageSelector = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   const languages = [
     { code: 'en', name: 'English' },
     { code: 'sw', name: 'Kiswahili' },
-    { code: 'sheng', name: 'Sheng' }
+    { code: 'sheng', name: 'Sheng' },
+    { code: 'giriama', name: 'Giriama' }
   ];
 
   return (

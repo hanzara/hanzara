@@ -6,9 +6,11 @@ import AuthModal from './AuthModal';
 import LanguageSelector from './LanguageSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Users, TrendingUp, Plus, LogOut } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -24,51 +26,57 @@ const Navigation = () => {
     }
   };
 
+  const navItemClass = (path: string) => 
+    `flex items-center gap-2 transition-colors ${isActive(path) 
+      ? 'text-primary' 
+      : 'text-muted-foreground hover:text-primary'
+    }`;
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
             <div 
-              className="font-bold text-xl bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent cursor-pointer"
+              className="font-bold text-xl bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate('/')}
             >
               ChamaVault
             </div>
             
             {user && (
-              <div className="hidden md:flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-1">
                 <Button
-                  variant={isActive('/') ? 'default' : 'ghost'}
+                  variant="ghost"
                   onClick={() => navigate('/')}
-                  className="flex items-center gap-2"
+                  className={navItemClass('/')}
                 >
                   <Home className="h-4 w-4" />
-                  Home
+                  {t('nav.home', 'Home')}
                 </Button>
                 <Button
-                  variant={isActive('/chamas') ? 'default' : 'ghost'}
+                  variant="ghost"
                   onClick={() => navigate('/chamas')}
-                  className="flex items-center gap-2"
+                  className={navItemClass('/chamas')}
                 >
                   <Users className="h-4 w-4" />
-                  Chamas
+                  {t('nav.chamas', 'Chamas')}
                 </Button>
                 <Button
-                  variant={isActive('/analytics') ? 'default' : 'ghost'}
+                  variant="ghost"
                   onClick={() => navigate('/analytics')}
-                  className="flex items-center gap-2"
+                  className={navItemClass('/analytics')}
                 >
                   <TrendingUp className="h-4 w-4" />
-                  Analytics
+                  {t('nav.analytics', 'Analytics')}
                 </Button>
                 <Button
-                  variant={isActive('/create-chama') ? 'default' : 'ghost'}
+                  variant="ghost"
                   onClick={() => navigate('/create-chama')}
-                  className="flex items-center gap-2"
+                  className={navItemClass('/create-chama')}
                 >
                   <Plus className="h-4 w-4" />
-                  Create
+                  {t('nav.create', 'Create')}
                 </Button>
               </div>
             )}
@@ -80,7 +88,7 @@ const Navigation = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">
-                  Welcome, {user.email}
+                  {t('nav.welcome', 'Welcome')}, {user.email?.split('@')[0]}
                 </span>
                 <Button
                   variant="outline"
@@ -88,7 +96,7 @@ const Navigation = () => {
                   className="flex items-center gap-2"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign Out
+                  {t('nav.signOut', 'Sign Out')}
                 </Button>
               </div>
             ) : (
@@ -97,7 +105,7 @@ const Navigation = () => {
                   variant="outline"
                   onClick={() => setAuthModalOpen(true)}
                 >
-                  Sign In
+                  {t('nav.signIn', 'Sign In')}
                 </Button>
                 <AuthModal 
                   open={authModalOpen} 
