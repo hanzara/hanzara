@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,8 @@ import SchedulePaymentPage from "./pages/SchedulePaymentPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
+import LoanManagementPage from "./pages/LoanManagementPage";
+import VotingSystemPage from "./pages/VotingSystemPage";
 
 const App = () => {
   console.log('App component rendering');
@@ -51,6 +52,8 @@ const App = () => {
                 <Route path="/make-contribution" element={<MakeContributionPage />} />
                 <Route path="/schedule-payment" element={<SchedulePaymentPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/loans" element={<LoanManagementPage />} />
+                <Route path="/voting" element={<VotingSystemPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
