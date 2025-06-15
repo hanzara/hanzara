@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import AuthModal from './AuthModal';
 import LanguageSelector from './LanguageSelector';
 import NotificationCenter from './NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, TrendingUp, Plus, LogOut, Bell, CreditCard, Vote } from 'lucide-react';
+import { Home, Users, TrendingUp, Plus, LogOut, Bell, CreditCard, Vote, Smartphone } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications } from '@/hooks/useNotifications';
 
@@ -93,6 +92,22 @@ const Navigation = () => {
                   >
                     <Vote className="h-4 w-4" />
                     Voting
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/investments')}
+                    className={navItemClass('/investments')}
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    Investments
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/mobile-money')}
+                    className={navItemClass('/mobile-money')}
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    Mobile Money
                   </Button>
                   <Button
                     variant="ghost"

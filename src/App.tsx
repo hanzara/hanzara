@@ -17,6 +17,8 @@ import NotFound from "./pages/NotFound";
 import { useState } from "react";
 import LoanManagementPage from "./pages/LoanManagementPage";
 import VotingSystemPage from "./pages/VotingSystemPage";
+import InvestmentPage from "./pages/InvestmentPage";
+import MobileMoneyPage from "./pages/MobileMoneyPage";
 
 const App = () => {
   console.log('App component rendering');
@@ -54,6 +56,8 @@ const App = () => {
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/loans" element={<LoanManagementPage />} />
                 <Route path="/voting" element={<VotingSystemPage />} />
+                <Route path="/investments" element={<InvestmentPage />} />
+                <Route path="/mobile-money" element={<MobileMoneyPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
