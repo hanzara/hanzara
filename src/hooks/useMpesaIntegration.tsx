@@ -25,14 +25,15 @@ export const useMpesaIntegration = () => {
 
       if (error) {
         console.error('STK Push error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to initiate M-Pesa payment');
       }
 
+      console.log('STK Push response:', data);
       return data;
     },
     onSuccess: (data) => {
       console.log('STK Push success:', data);
-      if (data.ResponseCode === '0') {
+      if (data?.ResponseCode === '0') {
         toast({
           title: "Payment Request Sent",
           description: "Check your phone for the M-Pesa PIN prompt",
@@ -40,7 +41,7 @@ export const useMpesaIntegration = () => {
       } else {
         toast({
           title: "Payment Request Failed",
-          description: data.ResponseDescription || "Failed to send payment request",
+          description: data?.ResponseDescription || data?.errorMessage || "Failed to send payment request",
           variant: "destructive",
         });
       }
@@ -49,7 +50,7 @@ export const useMpesaIntegration = () => {
       console.error('STK Push mutation error:', error);
       toast({
         title: "Payment Failed",
-        description: error.message || "Failed to initiate payment",
+        description: error.message || "Failed to initiate payment. Please check your M-Pesa credentials and try again.",
         variant: "destructive",
       });
     },
@@ -64,7 +65,7 @@ export const useMpesaIntegration = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       return data;
     },
   });
@@ -77,7 +78,7 @@ export const useMpesaIntegration = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       return data;
     },
   });
