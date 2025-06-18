@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useMpesaIntegration } from '@/hooks/useMpesaIntegration';
 
 export const useMobileMoneyData = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { stkPushMutation } = useMpesaIntegration();
 
   const mobileMoneyQuery = useQuery({
     queryKey: ['mobile-money-data', user?.id],
@@ -131,30 +133,46 @@ export const useMobileMoneyData = () => {
   });
 
   const depositMutation = useMutation({
-    mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
+    mutationFn: async ({ amount, description, phoneNumber }: { 
+      amount: number; 
+      description?: string;
+      phoneNumber: string;
+    }) => {
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          user_id: user.id,
-          amount,
-          type: 'deposit',
-          currency: 'KES',
-          description: description || 'Mobile money deposit',
-          status: 'completed'
-        })
-        .select()
-        .single();
+      // Use M-Pesa STK Push for real payments
+      const result = await stkPushMutation.mutateAsync({
+        phoneNumber,
+        amount,
+        description: description || 'Chama deposit'
+      });
 
-      if (error) throw error;
-      return data;
+      if (result.ResponseCode === '0') {
+        // Transaction initiated successfully, create pending record
+        const { data, error } = await supabase
+          .from('wallet_transactions')
+          .insert({
+            user_id: user.id,
+            amount,
+            type: 'deposit',
+            currency: 'KES',
+            description: description || 'M-Pesa deposit',
+            status: 'pending'
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        throw new Error(result.ResponseDescription || 'Failed to initiate payment');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mobile-money-data'] });
       toast({
-        title: "Deposit Successful",
-        description: "Your deposit has been processed successfully.",
+        title: "Payment Initiated",
+        description: "Check your phone for M-Pesa PIN prompt",
       });
     },
     onError: (error: any) => {
@@ -170,15 +188,17 @@ export const useMobileMoneyData = () => {
     mutationFn: async ({ amount, description }: { amount: number; description?: string }) => {
       if (!user) throw new Error('User not authenticated');
 
+      // For withdrawals, we'll create a pending transaction and handle it manually
+      // In a real app, you'd need additional M-Pesa API calls for B2C transactions
       const { data, error } = await supabase
         .from('wallet_transactions')
         .insert({
           user_id: user.id,
-          amount: -amount, // Negative for withdrawal
+          amount: -amount,
           type: 'withdrawal',
           currency: 'KES',
           description: description || 'Mobile money withdrawal',
-          status: 'completed'
+          status: 'pending'
         })
         .select()
         .single();
@@ -189,8 +209,8 @@ export const useMobileMoneyData = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mobile-money-data'] });
       toast({
-        title: "Withdrawal Successful",
-        description: "Your withdrawal has been processed successfully.",
+        title: "Withdrawal Request Submitted",
+        description: "Your withdrawal request is being processed.",
       });
     },
     onError: (error: any) => {
@@ -208,7 +228,7 @@ export const useMobileMoneyData = () => {
     depositMutation,
     withdrawMutation,
     isAddingAccount: addAccountMutation.isPending,
-    isProcessingDeposit: depositMutation.isPending,
+    isProcessingDeposit: depositMutation.isPending || stkPushMutation.isPending,
     isProcessingWithdrawal: withdrawMutation.isPending
   };
 };

@@ -35,7 +35,8 @@ const MobileMoneyPage = () => {
 
   const [transactionForm, setTransactionForm] = useState({
     amount: '',
-    description: ''
+    description: '',
+    phoneNumber: ''
   });
 
   const handleAddAccount = async () => {
@@ -52,14 +53,15 @@ const MobileMoneyPage = () => {
   };
 
   const handleDeposit = async () => {
-    if (!transactionForm.amount) return;
+    if (!transactionForm.amount || !transactionForm.phoneNumber) return;
     
     await depositMutation.mutateAsync({
       amount: parseFloat(transactionForm.amount),
-      description: transactionForm.description
+      description: transactionForm.description,
+      phoneNumber: transactionForm.phoneNumber
     });
     
-    setTransactionForm({ amount: '', description: '' });
+    setTransactionForm({ amount: '', description: '', phoneNumber: '' });
   };
 
   const handleWithdraw = async () => {
@@ -70,7 +72,7 @@ const MobileMoneyPage = () => {
       description: transactionForm.description
     });
     
-    setTransactionForm({ amount: '', description: '' });
+    setTransactionForm({ amount: '', description: '', phoneNumber: '' });
   };
 
   if (isLoading) {
@@ -99,7 +101,7 @@ const MobileMoneyPage = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Mobile Money Integration</h1>
-            <p className="text-muted-foreground">Seamless payments with M-Pesa, Airtel Money & more</p>
+            <p className="text-muted-foreground">Real M-Pesa payments for your chama</p>
           </div>
         </div>
 
@@ -112,7 +114,7 @@ const MobileMoneyPage = () => {
             </CardHeader>
             <CardContent>
               <CurrencyDisplay amount={data?.statistics.totalDeposits || 0} className="text-2xl font-bold text-green-600" showToggle={false} />
-              <p className="text-xs text-muted-foreground">Money added to wallet</p>
+              <p className="text-xs text-muted-foreground">Money added via M-Pesa</p>
             </CardContent>
           </Card>
 
@@ -134,7 +136,7 @@ const MobileMoneyPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{data?.statistics.successRate.toFixed(1)}%</div>
-              <p className="text-xs text-muted-foreground">Transaction success</p>
+              <p className="text-xs text-muted-foreground">M-Pesa success rate</p>
             </CardContent>
           </Card>
 
@@ -145,7 +147,7 @@ const MobileMoneyPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{data?.accounts.length || 0}</div>
-              <p className="text-xs text-muted-foreground">Mobile money accounts</p>
+              <p className="text-xs text-muted-foreground">M-Pesa accounts</p>
             </CardContent>
           </Card>
         </div>
@@ -155,7 +157,7 @@ const MobileMoneyPage = () => {
           <Card className="border-0 shadow-lg lg:col-span-2">
             <CardHeader>
               <CardTitle>Transaction Trends</CardTitle>
-              <CardDescription>Daily deposits and withdrawals over the last 7 days</CardDescription>
+              <CardDescription>Daily M-Pesa deposits and withdrawals over the last 7 days</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -174,8 +176,8 @@ const MobileMoneyPage = () => {
           {/* Quick Actions */}
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Deposit or withdraw money</CardDescription>
+              <CardTitle>M-Pesa Transactions</CardTitle>
+              <CardDescription>Real M-Pesa payments</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="deposit" className="w-full">
@@ -184,6 +186,16 @@ const MobileMoneyPage = () => {
                   <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
                 </TabsList>
                 <TabsContent value="deposit" className="space-y-4">
+                  <div>
+                    <Label htmlFor="deposit-phone">Phone Number</Label>
+                    <Input
+                      id="deposit-phone"
+                      type="tel"
+                      value={transactionForm.phoneNumber}
+                      onChange={(e) => setTransactionForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      placeholder="0712345678"
+                    />
+                  </div>
                   <div>
                     <Label htmlFor="deposit-amount">Amount (KES)</Label>
                     <Input
@@ -206,9 +218,9 @@ const MobileMoneyPage = () => {
                   <Button 
                     className="w-full" 
                     onClick={handleDeposit}
-                    disabled={isProcessingDeposit || !transactionForm.amount}
+                    disabled={isProcessingDeposit || !transactionForm.amount || !transactionForm.phoneNumber}
                   >
-                    {isProcessingDeposit ? 'Processing...' : 'Deposit Money'}
+                    {isProcessingDeposit ? 'Processing...' : 'Send M-Pesa Request'}
                   </Button>
                 </TabsContent>
                 <TabsContent value="withdraw" className="space-y-4">
@@ -236,7 +248,7 @@ const MobileMoneyPage = () => {
                     onClick={handleWithdraw}
                     disabled={isProcessingWithdrawal || !transactionForm.amount}
                   >
-                    {isProcessingWithdrawal ? 'Processing...' : 'Withdraw Money'}
+                    {isProcessingWithdrawal ? 'Processing...' : 'Request Withdrawal'}
                   </Button>
                 </TabsContent>
               </Tabs>
@@ -249,7 +261,7 @@ const MobileMoneyPage = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Mobile Money Accounts</CardTitle>
-              <CardDescription>Manage your connected mobile money accounts</CardDescription>
+              <CardDescription>Manage your connected M-Pesa accounts</CardDescription>
             </div>
             <Button onClick={() => setShowAddAccount(true)} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
@@ -259,7 +271,7 @@ const MobileMoneyPage = () => {
           <CardContent>
             {showAddAccount && (
               <div className="mb-6 p-4 border rounded-lg bg-white/50">
-                <h3 className="font-medium mb-4">Add New Mobile Money Account</h3>
+                <h3 className="font-medium mb-4">Add New M-Pesa Account</h3>
                 <div className="grid gap-4">
                   <div>
                     <Label htmlFor="provider">Provider</Label>
@@ -313,8 +325,8 @@ const MobileMoneyPage = () => {
               {data?.accounts.map((account) => (
                 <div key={account.id} className="p-4 border rounded-lg bg-white/50 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Smartphone className="h-6 w-6 text-blue-600" />
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Smartphone className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
                       <h3 className="font-medium">{account.provider}</h3>
@@ -338,8 +350,8 @@ const MobileMoneyPage = () => {
               {(!data?.accounts || data.accounts.length === 0) && !showAddAccount && (
                 <div className="text-center py-8 text-muted-foreground">
                   <Smartphone className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No mobile money accounts connected yet</p>
-                  <p className="text-sm">Add an account to start making seamless payments</p>
+                  <p>No M-Pesa accounts connected yet</p>
+                  <p className="text-sm">Add an account to start making real payments</p>
                 </div>
               )}
             </div>
@@ -349,8 +361,8 @@ const MobileMoneyPage = () => {
         {/* Recent Transactions */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest mobile money transactions</CardDescription>
+            <CardTitle>Recent M-Pesa Transactions</CardTitle>
+            <CardDescription>Your latest M-Pesa transaction history</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -366,7 +378,7 @@ const MobileMoneyPage = () => {
                       }
                     </div>
                     <div>
-                      <p className="font-medium">{transaction.description || `${transaction.type} transaction`}</p>
+                      <p className="font-medium">{transaction.description || `M-Pesa ${transaction.type}`}</p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(transaction.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -398,8 +410,8 @@ const MobileMoneyPage = () => {
               {(!data?.transactions || data.transactions.length === 0) && (
                 <div className="text-center py-8 text-muted-foreground">
                   <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No transactions yet</p>
-                  <p className="text-sm">Your mobile money transactions will appear here</p>
+                  <p>No M-Pesa transactions yet</p>
+                  <p className="text-sm">Your M-Pesa transactions will appear here</p>
                 </div>
               )}
             </div>
