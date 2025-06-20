@@ -5,18 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, DollarSign, CreditCard } from 'lucide-react';
+import { ArrowLeft, DollarSign, CreditCard, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Navigation from '@/components/Navigation';
 import CurrencyDisplay from '@/components/CurrencyDisplay';
+import { useMpesaIntegration } from '@/hooks/useMpesaIntegration';
 
 const MakeContributionPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { stkPushMutation, isProcessingPayment } = useMpesaIntegration();
+  
   const [selectedChama, setSelectedChama] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const chamas = [
     { id: '1', name: 'Unity Savings Group', requiredAmount: 5000 },
@@ -24,28 +28,60 @@ const MakeContributionPage = () => {
   ];
 
   const paymentMethods = [
-    { id: 'mpesa', name: 'M-Pesa', icon: '📱' },
-    { id: 'bank', name: 'Bank Transfer', icon: '🏦' },
-    { id: 'card', name: 'Debit/Credit Card', icon: '💳' }
+    { id: 'mpesa', name: 'M-Pesa', icon: '📱', description: 'Fast and secure mobile payment' },
+    { id: 'bank', name: 'Bank Transfer', icon: '🏦', description: 'Direct bank transfer' },
+    { id: 'card', name: 'Debit/Credit Card', icon: '💳', description: 'Visa, Mastercard accepted' }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedChama && amount && paymentMethod) {
-      const selectedChamaData = chamas.find(c => c.id === selectedChama);
+    
+    if (!selectedChama || !amount || !paymentMethod) {
       toast({
-        title: "Contribution Processing!",
-        description: `Contributing ${amount} KES to ${selectedChamaData?.name} via ${paymentMethods.find(p => p.id === paymentMethod)?.name}`,
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
       });
-      
-      // Simulate payment processing
-      setTimeout(() => {
+      return;
+    }
+
+    const selectedChamaData = chamas.find(c => c.id === selectedChama);
+
+    if (paymentMethod === 'mpesa') {
+      if (!phoneNumber) {
         toast({
-          title: "Contribution Successful!",
-          description: "Your contribution has been recorded.",
+          title: "Phone Number Required",
+          description: "Please enter your M-Pesa phone number",
+          variant: "destructive",
         });
-        navigate('/');
-      }, 2000);
+        return;
+      }
+
+      try {
+        console.log('Initiating M-Pesa payment:', {
+          phoneNumber,
+          amount: Number(amount),
+          chama: selectedChamaData?.name
+        });
+
+        await stkPushMutation.mutateAsync({
+          phoneNumber: phoneNumber,
+          amount: Number(amount),
+          description: `Contribution to ${selectedChamaData?.name}`
+        });
+
+        // Success is handled by the mutation's onSuccess callback
+      } catch (error) {
+        console.error('M-Pesa payment failed:', error);
+        // Error is handled by the mutation's onError callback
+      }
+    } else {
+      // Handle other payment methods
+      toast({
+        title: "Payment Method Not Available",
+        description: `${paymentMethods.find(p => p.id === paymentMethod)?.name} integration coming soon`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -115,6 +151,8 @@ const MakeContributionPage = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder={selectedChamaData ? selectedChamaData.requiredAmount.toString() : "Enter amount"}
+                    min="1"
+                    step="1"
                   />
                 </div>
 
@@ -136,9 +174,7 @@ const MakeContributionPage = () => {
                           <div>
                             <p className="font-medium">{method.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {method.id === 'mpesa' && 'Fast and secure mobile payment'}
-                              {method.id === 'bank' && 'Direct bank transfer'}
-                              {method.id === 'card' && 'Visa, Mastercard accepted'}
+                              {method.description}
                             </p>
                           </div>
                           <div className="ml-auto">
@@ -154,22 +190,52 @@ const MakeContributionPage = () => {
                   </div>
                 </div>
 
+                {paymentMethod === 'mpesa' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">M-Pesa Phone Number</Label>
+                    <div className="relative">
+                      <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="e.g., 254712345678 or 0712345678"
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter your phone number in format: 254XXXXXXXXX or 07XXXXXXXX
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex gap-4 pt-4">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => navigate(-1)}
                     className="flex-1"
+                    disabled={isProcessingPayment}
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     className="flex-1"
-                    disabled={!selectedChama || !amount || !paymentMethod}
+                    disabled={!selectedChama || !amount || !paymentMethod || isProcessingPayment || (paymentMethod === 'mpesa' && !phoneNumber)}
                   >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Make Contribution
+                    {isProcessingPayment ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="h-4 w-4 mr-2" />
+                        Make Contribution
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>

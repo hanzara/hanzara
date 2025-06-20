@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -27,43 +26,85 @@ interface STKPushRequest {
 }
 
 serve(async (req) => {
+  console.log('=== M-Pesa Integration Function Called ===');
+  console.log('Request method:', req.method);
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const requestBody = await req.json();
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
-    const { action, phoneNumber, amount, description } = await req.json();
+    const { action, phoneNumber, amount, description } = requestBody;
 
-    console.log('M-Pesa Integration - Action:', action);
+    console.log('=== Processing M-Pesa Action ===');
+    console.log('Action:', action);
+    console.log('Phone Number:', phoneNumber);
+    console.log('Amount:', amount);
 
-    // Get M-Pesa credentials from secrets
+    // Get M-Pesa credentials from environment variables
     const consumerKey = Deno.env.get('MPESA_CONSUMER_KEY');
     const consumerSecret = Deno.env.get('MPESA_CONSUMER_SECRET');
 
+    console.log('=== Checking Credentials ===');
     console.log('Consumer Key exists:', !!consumerKey);
     console.log('Consumer Secret exists:', !!consumerSecret);
+    console.log('Consumer Key length:', consumerKey?.length || 0);
+    console.log('Consumer Secret length:', consumerSecret?.length || 0);
 
     if (!consumerKey || !consumerSecret) {
-      console.error('Missing M-Pesa credentials');
+      console.error('=== MISSING CREDENTIALS ===');
+      console.error('Consumer Key:', consumerKey ? 'EXISTS' : 'MISSING');
+      console.error('Consumer Secret:', consumerSecret ? 'EXISTS' : 'MISSING');
+      
       return new Response(JSON.stringify({ 
-        error: 'M-Pesa credentials not configured properly',
-        details: 'Please check your MPESA_CONSUMER_KEY and MPESA_CONSUMER_SECRET'
+        error: 'M-Pesa credentials not configured',
+        details: 'MPESA_CONSUMER_KEY and MPESA_CONSUMER_SECRET must be set in Edge Function secrets',
+        consumerKeyExists: !!consumerKey,
+        consumerSecretExists: !!consumerSecret
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Validate input for STK Push
+    if (action === 'stk_push') {
+      if (!phoneNumber || !amount) {
+        console.error('Missing required parameters for STK Push');
+        return new Response(JSON.stringify({ 
+          error: 'Missing parameters',
+          details: 'phoneNumber and amount are required for STK Push'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (amount < 1) {
+        console.error('Invalid amount:', amount);
+        return new Response(JSON.stringify({ 
+          error: 'Invalid amount',
+          details: 'Amount must be at least 1 KES'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    console.log('=== Getting Access Token ===');
     // Get access token
     const accessToken = await getMpesaAccessToken(consumerKey, consumerSecret);
+    console.log('Access token obtained successfully');
     
     if (action === 'stk_push') {
+      console.log('=== Processing STK Push ===');
       const result = await initiateSTKPush({
         accessToken,
         phoneNumber,
@@ -71,12 +112,16 @@ serve(async (req) => {
         description: description || 'Chama contribution'
       });
 
+      console.log('=== STK Push Result ===');
+      console.log('Result:', JSON.stringify(result, null, 2));
+
       return new Response(JSON.stringify(result), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (action === 'check_balance') {
+      console.log('=== Processing Balance Check ===');
       const balance = await checkAccountBalance(accessToken);
       
       return new Response(JSON.stringify({ balance }), {
@@ -85,7 +130,8 @@ serve(async (req) => {
     }
 
     if (action === 'transaction_status') {
-      const { checkoutRequestId } = await req.json();
+      console.log('=== Processing Transaction Status ===');
+      const { checkoutRequestId } = requestBody;
       const status = await checkTransactionStatus(accessToken, checkoutRequestId);
       
       return new Response(JSON.stringify(status), {
@@ -93,16 +139,27 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: 'Invalid action' }), {
+    console.error('Invalid action:', action);
+    return new Response(JSON.stringify({ 
+      error: 'Invalid action',
+      details: `Supported actions: stk_push, check_balance, transaction_status. Received: ${action}`
+    }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('M-Pesa Integration Error:', error);
+    console.error('=== FUNCTION ERROR ===');
+    console.error('Error type:', typeof error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error:', error);
+    
     return new Response(JSON.stringify({ 
-      error: error.message,
-      details: 'Please check your M-Pesa credentials and network connectivity'
+      error: 'Internal server error',
+      message: error.message,
+      details: 'Please check the function logs for more information'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -111,14 +168,17 @@ serve(async (req) => {
 });
 
 async function getMpesaAccessToken(consumerKey: string, consumerSecret: string): Promise<string> {
-  console.log('Getting M-Pesa access token...');
+  console.log('=== Getting M-Pesa Access Token ===');
   
-  // Encode credentials
+  // Encode credentials in base64
   const credentials = btoa(`${consumerKey}:${consumerSecret}`);
-  console.log('Credentials encoded successfully');
+  console.log('Credentials encoded for authentication');
+  
+  const authUrl = 'https://sandbox-api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+  console.log('Auth URL:', authUrl);
   
   try {
-    const response = await fetch('https://sandbox-api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
+    const response = await fetch(authUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Basic ${credentials}`,
@@ -126,21 +186,27 @@ async function getMpesaAccessToken(consumerKey: string, consumerSecret: string):
       },
     });
 
-    console.log('Access token response status:', response.status);
-    console.log('Access token response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('=== Access Token Response ===');
+    console.log('Status:', response.status);
+    console.log('Status Text:', response.statusText);
+    console.log('Headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Access token error response:', errorText);
+      console.error('=== ACCESS TOKEN ERROR ===');
+      console.error('Status:', response.status);
+      console.error('Error response:', errorText);
       throw new Error(`Failed to get access token: ${response.status} - ${errorText}`);
     }
 
     const data: MpesaAccessToken = await response.json();
-    console.log('Access token received successfully');
+    console.log('=== Access Token Success ===');
+    console.log('Token obtained, expires in:', data.expires_in);
     return data.access_token;
   } catch (error) {
-    console.error('Network error getting access token:', error);
-    throw new Error(`Network error connecting to M-Pesa API: ${error.message}`);
+    console.error('=== ACCESS TOKEN NETWORK ERROR ===');
+    console.error('Error:', error);
+    throw new Error(`Network error getting access token: ${error.message}`);
   }
 }
 
@@ -150,7 +216,10 @@ async function initiateSTKPush({ accessToken, phoneNumber, amount, description }
   amount: number;
   description: string;
 }) {
-  console.log('Initiating STK Push for phone:', phoneNumber, 'amount:', amount);
+  console.log('=== Initiating STK Push ===');
+  console.log('Phone:', phoneNumber);
+  console.log('Amount:', amount);
+  console.log('Description:', description);
   
   const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, -3);
   const businessShortCode = '174379'; // Sandbox business short code
@@ -160,13 +229,23 @@ async function initiateSTKPush({ accessToken, phoneNumber, amount, description }
 
   // Format phone number - ensure it starts with 254
   let formattedPhone = phoneNumber.replace(/\D/g, ''); // Remove non-digits
+  console.log('Phone after removing non-digits:', formattedPhone);
+  
   if (formattedPhone.startsWith('0')) {
     formattedPhone = '254' + formattedPhone.slice(1);
   } else if (formattedPhone.startsWith('7') || formattedPhone.startsWith('1')) {
     formattedPhone = '254' + formattedPhone;
   }
 
-  console.log('Formatted phone number:', formattedPhone);
+  console.log('=== Phone Number Formatting ===');
+  console.log('Original:', phoneNumber);
+  console.log('Formatted:', formattedPhone);
+
+  // Validate phone number format
+  if (!formattedPhone.match(/^254[17]\d{8}$/)) {
+    console.error('Invalid phone number format:', formattedPhone);
+    throw new Error('Invalid phone number format. Use format: 254XXXXXXXXX or 07XXXXXXXX');
+  }
 
   const stkPushData: STKPushRequest = {
     BusinessShortCode: businessShortCode,
@@ -178,14 +257,18 @@ async function initiateSTKPush({ accessToken, phoneNumber, amount, description }
     PartyB: businessShortCode,
     PhoneNumber: formattedPhone,
     CallBackURL: `${Deno.env.get('SUPABASE_URL')}/functions/v1/mpesa-callback`,
-    AccountReference: 'Chama Contribution',
+    AccountReference: 'Chama',
     TransactionDesc: description,
   };
 
-  console.log('STK Push payload:', JSON.stringify(stkPushData, null, 2));
+  console.log('=== STK Push Payload ===');
+  console.log(JSON.stringify(stkPushData, null, 2));
+
+  const stkUrl = 'https://sandbox-api.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+  console.log('STK Push URL:', stkUrl);
 
   try {
-    const response = await fetch('https://sandbox-api.safaricom.co.ke/mpesa/stkpush/v1/processrequest', {
+    const response = await fetch(stkUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -194,19 +277,25 @@ async function initiateSTKPush({ accessToken, phoneNumber, amount, description }
       body: JSON.stringify(stkPushData),
     });
 
-    console.log('STK Push response status:', response.status);
+    console.log('=== STK Push Response ===');
+    console.log('Status:', response.status);
+    console.log('Status Text:', response.statusText);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('STK Push error response:', errorText);
+      console.error('=== STK PUSH ERROR ===');
+      console.error('Status:', response.status);
+      console.error('Error response:', errorText);
       throw new Error(`STK Push failed: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('STK Push result:', result);
+    console.log('=== STK Push Success ===');
+    console.log('Result:', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
-    console.error('STK Push network error:', error);
+    console.error('=== STK PUSH NETWORK ERROR ===');
+    console.error('Error:', error);
     throw new Error(`Network error during STK Push: ${error.message}`);
   }
 }
