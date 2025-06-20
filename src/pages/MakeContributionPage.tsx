@@ -18,7 +18,7 @@ const MakeContributionPage = () => {
   const { stkPushMutation, isProcessingPayment } = useMpesaIntegration();
   
   const [selectedChama, setSelectedChama] = useState('');
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState('0.00');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
 
@@ -152,7 +152,7 @@ const MakeContributionPage = () => {
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder={selectedChamaData ? selectedChamaData.requiredAmount.toString() : "Enter amount"}
                     min="1"
-                    step="1"
+                    step="0.01"
                   />
                 </div>
 
