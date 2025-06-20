@@ -19,6 +19,9 @@ import LoanManagementPage from "./pages/LoanManagementPage";
 import VotingSystemPage from "./pages/VotingSystemPage";
 import InvestmentPage from "./pages/InvestmentPage";
 import MobileMoneyPage from "./pages/MobileMoneyPage";
+import P2PTradingPage from "./pages/P2PTradingPage";
+import BlockchainLendingPage from "./pages/BlockchainLendingPage";
+import StakingPage from "./pages/StakingPage";
 
 const App = () => {
   console.log('App component rendering');
@@ -55,6 +58,9 @@ const App = () => {
                 <Route path="/schedule-payment" element={<SchedulePaymentPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/loans" element={<LoanManagementPage />} />
+                <Route path="/blockchain-lending" element={<BlockchainLendingPage />} />
+                <Route path="/p2p-trading" element={<P2PTradingPage />} />
+                <Route path="/staking" element={<StakingPage />} />
                 <Route path="/voting" element={<VotingSystemPage />} />
                 <Route path="/investments" element={<InvestmentPage />} />
                 <Route path="/mobile-money" element={<MobileMoneyPage />} />

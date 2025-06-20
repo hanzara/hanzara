@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,7 @@ import AuthModal from './AuthModal';
 import LanguageSelector from './LanguageSelector';
 import NotificationCenter from './NotificationCenter';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, TrendingUp, Plus, LogOut, Bell, CreditCard, Vote, Smartphone } from 'lucide-react';
+import { Home, Users, TrendingUp, Plus, LogOut, Bell, CreditCard, Vote, Smartphone, ArrowLeftRight, Shield, Coins } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications } from '@/hooks/useNotifications';
 
@@ -84,6 +85,30 @@ const Navigation = () => {
                   >
                     <CreditCard className="h-4 w-4" />
                     Loans
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/blockchain-lending')}
+                    className={navItemClass('/blockchain-lending')}
+                  >
+                    <Shield className="h-4 w-4" />
+                    DeFi Loans
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/p2p-trading')}
+                    className={navItemClass('/p2p-trading')}
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    P2P Trade
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate('/staking')}
+                    className={navItemClass('/staking')}
+                  >
+                    <Coins className="h-4 w-4" />
+                    Staking
                   </Button>
                   <Button
                     variant="ghost"
