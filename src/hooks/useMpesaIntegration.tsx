@@ -55,7 +55,6 @@ export const useMpesaIntegration = () => {
         return data;
       } catch (err) {
         console.error('=== M-Pesa Integration Error ===');
-        console.error('Error type:', typeof err);
         console.error('Error message:', err instanceof Error ? err.message : 'Unknown error');
         console.error('Full error:', err);
         throw err;
@@ -68,7 +67,7 @@ export const useMpesaIntegration = () => {
       if (data?.ResponseCode === '0') {
         toast({
           title: "Payment Request Sent! 📱",
-          description: "Check your phone for the M-Pesa PIN prompt. Enter your PIN to complete the payment.",
+          description: "Demo mode: Payment simulation successful. In production, check your phone for the M-Pesa PIN prompt.",
         });
       } else {
         console.warn('Unexpected response code:', data?.ResponseCode);
