@@ -67,7 +67,7 @@ export const useMpesaIntegration = () => {
       if (data?.ResponseCode === '0') {
         toast({
           title: "Payment Request Sent! 📱",
-          description: "Demo mode: Payment simulation successful. In production, check your phone for the M-Pesa PIN prompt.",
+          description: "Check your phone for the M-Pesa PIN prompt to complete the payment.",
         });
       } else {
         console.warn('Unexpected response code:', data?.ResponseCode);
@@ -91,6 +91,10 @@ export const useMpesaIntegration = () => {
           errorMessage = "Network error. Please check your connection and try again.";
         } else if (error.message.includes('phone') || error.message.includes('Phone')) {
           errorMessage = "Invalid phone number. Please check the format and try again.";
+        } else if (error.message.includes('insufficient funds')) {
+          errorMessage = "Insufficient funds in your M-Pesa account.";
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "Request timeout. Please try again.";
         } else {
           errorMessage = error.message;
         }
