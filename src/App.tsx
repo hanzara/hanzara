@@ -1,3 +1,5 @@
+
+import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +16,6 @@ import MakeContributionPage from "./pages/MakeContributionPage";
 import SchedulePaymentPage from "./pages/SchedulePaymentPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
 import LoanManagementPage from "./pages/LoanManagementPage";
 import VotingSystemPage from "./pages/VotingSystemPage";
 import InvestmentPage from "./pages/InvestmentPage";
