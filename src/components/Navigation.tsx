@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,7 +34,8 @@ import {
   ArrowRightLeft,
   Wallet,
   Target,
-  Receipt
+  Receipt,
+  Bell
 } from "lucide-react"
 
 const Navigation = () => {
@@ -42,6 +43,7 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const { language, setLanguage } = useLanguage();
   const { toast } = useToast();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const handleSignOut = () => {
     signOut();
@@ -214,7 +216,18 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <NotificationCenter />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsNotificationOpen(true)}
+              className="relative"
+            >
+              <Bell className="h-4 w-4" />
+            </Button>
+            <NotificationCenter 
+              isOpen={isNotificationOpen} 
+              onClose={() => setIsNotificationOpen(false)} 
+            />
             <LanguageSelector />
             
             {user ? (

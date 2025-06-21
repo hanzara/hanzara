@@ -91,7 +91,7 @@ const SavingsGoalsPage = () => {
     { value: 'gadgets', label: 'Gadgets', icon: Smartphone, color: 'bg-teal-500' }
   ];
 
-  const calculateProgress = (current, target) => {
+  const calculateProgress = (current: number, target: number) => {
     const currentNum = Number(current) || 0;
     const targetNum = Number(target) || 1;
     return Math.min((currentNum / targetNum) * 100, 100);
@@ -137,7 +137,7 @@ const SavingsGoalsPage = () => {
     });
   };
 
-  const handleDeposit = (goalId, amount) => {
+  const handleDeposit = (goalId: number, amount: string) => {
     setGoals(goals.map(goal => {
       if (goal.id === goalId) {
         const newAmount = goal.currentAmount + Number(amount);
@@ -161,12 +161,12 @@ const SavingsGoalsPage = () => {
     });
   };
 
-  const getCategoryIcon = (category) => {
+  const getCategoryIcon = (category: string) => {
     const cat = goalCategories.find(c => c.value === category);
     return cat ? cat.icon : Target;
   };
 
-  const getCategoryColor = (category) => {
+  const getCategoryColor = (category: string) => {
     const cat = goalCategories.find(c => c.value === category);
     return cat ? cat.color : 'bg-gray-500';
   };
@@ -384,10 +384,11 @@ const SavingsGoalsPage = () => {
                                   placeholder="1000"
                                   onKeyPress={(e) => {
                                     if (e.key === 'Enter') {
-                                      const amount = e.target.value;
+                                      const target = e.target as HTMLInputElement;
+                                      const amount = target.value;
                                       if (amount) {
                                         handleDeposit(goal.id, amount);
-                                        e.target.value = '';
+                                        target.value = '';
                                       }
                                     }
                                   }}
@@ -395,8 +396,8 @@ const SavingsGoalsPage = () => {
                               </div>
                               <Button 
                                 onClick={() => {
-                                  const input = document.getElementById('deposit-amount');
-                                  const amount = input.value;
+                                  const input = document.getElementById('deposit-amount') as HTMLInputElement;
+                                  const amount = input?.value;
                                   if (amount) {
                                     handleDeposit(goal.id, amount);
                                     input.value = '';
