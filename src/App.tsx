@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -28,6 +29,8 @@ import SmartWalletPage from "./pages/SmartWalletPage";
 import CommunityHubPage from "./pages/CommunityHubPage";
 import BorrowerDashboardPage from "./pages/BorrowerDashboardPage";
 import InvestorDashboardPage from "./pages/InvestorDashboardPage";
+import BillPaymentsPage from "./pages/BillPaymentsPage";
+import SavingsGoalsPage from "./pages/SavingsGoalsPage";
 import LoanApplicationForm from "./components/LoanApplicationForm";
 import RoleSelector from "./components/RoleSelector";
 
