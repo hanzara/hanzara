@@ -1,235 +1,308 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { 
-  Target, TrendingUp, Calendar, Zap, Gift, Trophy, 
-  Car, Home, GraduationCap, Plane, Heart, Smartphone,
-  Plus, Edit, CheckCircle, AlertCircle, Clock, Coins
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Target,
+  Plus,
+  TrendingUp,
+  Calendar,
+  Zap,
+  Trophy,
+  Gift,
+  Star,
+  Home,
+  Car,
+  GraduationCap,
+  Plane,
+  Heart,
+  ShoppingBag,
+  Smartphone,
+  Coffee
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import Navigation from '@/components/Navigation';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const SavingsGoalsPage = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
-  
-  const [newGoalOpen, setNewGoalOpen] = useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
-
-  // Mock data for savings goals
-  const savingsGoals = [
+  const [goals, setGoals] = useState([
     {
       id: 1,
-      name: 'New Car Fund',
-      category: 'transport',
-      icon: Car,
-      targetAmount: 800000,
-      currentAmount: 320000,
-      startDate: '2024-01-01',
-      targetDate: '2024-12-31',
-      monthlyContribution: 50000,
+      name: "Emergency Fund",
+      targetAmount: 50000,
+      currentAmount: 12500,
+      targetDate: "2024-12-31",
+      category: "emergency",
       autoSave: true,
-      priority: 'high',
-      color: '#ef4444'
+      monthlyTarget: 3125,
+      priority: "high",
+      description: "Build a 6-month emergency fund for financial security"
     },
     {
       id: 2,
-      name: 'House Down Payment',
-      category: 'housing',
-      icon: Home,
-      targetAmount: 2000000,
-      currentAmount: 650000,
-      startDate: '2023-06-01',
-      targetDate: '2025-06-01',
-      monthlyContribution: 75000,
-      autoSave: true,
-      priority: 'high',
-      color: '#3b82f6'
-    },
-    {
-      id: 3,
-      name: 'Masters Degree',
-      category: 'education',
-      icon: GraduationCap,
-      targetAmount: 500000,
-      currentAmount: 180000,
-      startDate: '2024-02-01',
-      targetDate: '2024-08-01',
-      monthlyContribution: 55000,
+      name: "Dream Vacation",
+      targetAmount: 80000,
+      currentAmount: 25000,
+      targetDate: "2024-08-15",
+      category: "travel",
       autoSave: false,
-      priority: 'medium',
-      color: '#22c55e'
-    },
-    {
-      id: 4,
-      name: 'Europe Vacation',
-      category: 'travel',
-      icon: Plane,
-      targetAmount: 300000,
-      currentAmount: 120000,
-      startDate: '2024-01-01',
-      targetDate: '2024-07-01',
-      monthlyContribution: 30000,
-      autoSave: true,
-      priority: 'low',
-      color: '#f59e0b'
+      monthlyTarget: 6667,
+      priority: "medium",
+      description: "Safari trip to Maasai Mara and Zanzibar"
     }
-  ];
+  ]);
 
-  const savingsProgress = [
-    { month: 'Jan', amount: 45000 },
-    { month: 'Feb', amount: 95000 },
-    { month: 'Mar', amount: 150000 },
-    { month: 'Apr', amount: 215000 },
-    { month: 'May', amount: 285000 },
-    { month: 'Jun', amount: 360000 },
-  ];
+  const [achievements, setAchievements] = useState([
+    { id: 1, title: "First Goal Created", description: "Created your first savings goal", unlocked: true, icon: Target },
+    { id: 2, title: "Quarter Way There", description: "Reached 25% of any goal", unlocked: true, icon: TrendingUp },
+    { id: 3, title: "Consistent Saver", description: "Made deposits for 30 consecutive days", unlocked: false, icon: Calendar },
+    { id: 4, title: "Goal Crusher", description: "Completed your first savings goal", unlocked: false, icon: Trophy }
+  ]);
+
+  const [newGoal, setNewGoal] = useState({
+    name: '',
+    targetAmount: '',
+    targetDate: '',
+    category: '',
+    description: '',
+    autoSave: false,
+    monthlyTarget: ''
+  });
 
   const goalCategories = [
-    { id: 'transport', name: 'Transport', icon: Car, color: 'bg-red-500' },
-    { id: 'housing', name: 'Housing', icon: Home, color: 'bg-blue-500' },
-    { id: 'education', name: 'Education', icon: GraduationCap, color: 'bg-green-500' },
-    { id: 'travel', name: 'Travel', icon: Plane, color: 'bg-yellow-500' },
-    { id: 'emergency', name: 'Emergency Fund', icon: Heart, color: 'bg-red-500' },
-    { id: 'gadgets', name: 'Gadgets', icon: Smartphone, color: 'bg-purple-500' },
-  ];
-
-  const achievements = [
-    { id: 1, name: 'First Goal Creator', description: 'Created your first savings goal', earned: true, points: 100 },
-    { id: 2, name: 'Consistent Saver', description: '6 months of consistent contributions', earned: true, points: 500 },
-    { id: 3, name: 'Goal Achiever', description: 'Completed your first savings goal', earned: false, points: 1000 },
-    { id: 4, name: 'Auto-Save Master', description: 'Set up auto-save for 3+ goals', earned: false, points: 300 },
+    { value: 'emergency', label: 'Emergency Fund', icon: Target, color: 'bg-red-500' },
+    { value: 'travel', label: 'Travel', icon: Plane, color: 'bg-blue-500' },
+    { value: 'education', label: 'Education', icon: GraduationCap, color: 'bg-green-500' },
+    { value: 'home', label: 'Home', icon: Home, color: 'bg-purple-500' },
+    { value: 'car', label: 'Vehicle', icon: Car, color: 'bg-orange-500' },
+    { value: 'health', label: 'Health', icon: Heart, color: 'bg-pink-500' },
+    { value: 'shopping', label: 'Shopping', icon: ShoppingBag, color: 'bg-indigo-500' },
+    { value: 'gadgets', label: 'Gadgets', icon: Smartphone, color: 'bg-teal-500' }
   ];
 
   const calculateProgress = (current, target) => {
-    return Math.round((current / target) * 100);
-  };
-
-  const calculateTimeRemaining = (targetDate) => {
-    const today = new Date();
-    const target = new Date(targetDate);
-    const diffTime = target - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'Past due';
-    if (diffDays < 30) return `${diffDays} days`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months`;
-    return `${Math.ceil(diffDays / 365)} years`;
+    const currentNum = Number(current) || 0;
+    const targetNum = Number(target) || 1;
+    return Math.min((currentNum / targetNum) * 100, 100);
   };
 
   const handleCreateGoal = () => {
+    if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const goal = {
+      id: goals.length + 1,
+      name: newGoal.name,
+      targetAmount: Number(newGoal.targetAmount),
+      currentAmount: 0,
+      targetDate: newGoal.targetDate,
+      category: newGoal.category,
+      description: newGoal.description,
+      autoSave: newGoal.autoSave,
+      monthlyTarget: Number(newGoal.monthlyTarget),
+      priority: 'medium'
+    };
+
+    setGoals([...goals, goal]);
+    setNewGoal({
+      name: '',
+      targetAmount: '',
+      targetDate: '',
+      category: '',
+      description: '',
+      autoSave: false,
+      monthlyTarget: ''
+    });
+
     toast({
       title: "Goal Created!",
-      description: "Your new savings goal has been set up successfully",
+      description: `Your ${goal.name} savings goal has been created successfully.`
     });
-    setNewGoalOpen(false);
   };
 
-  const handleContribute = (goalId, amount) => {
+  const handleDeposit = (goalId, amount) => {
+    setGoals(goals.map(goal => {
+      if (goal.id === goalId) {
+        const newAmount = goal.currentAmount + Number(amount);
+        const isCompleted = newAmount >= goal.targetAmount;
+        
+        if (isCompleted) {
+          toast({
+            title: "🎉 Goal Completed!",
+            description: `Congratulations! You've reached your ${goal.name} goal!`
+          });
+        }
+        
+        return { ...goal, currentAmount: newAmount };
+      }
+      return goal;
+    }));
+
     toast({
-      title: "Contribution Added",
-      description: `KES ${amount.toLocaleString()} added to your goal`,
+      title: "Deposit Successful",
+      description: `KES ${amount} has been added to your savings goal.`
     });
   };
 
-  const getPriorityColor = (priority) => {
-    switch(priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getCategoryIcon = (category) => {
+    const cat = goalCategories.find(c => c.value === category);
+    return cat ? cat.icon : Target;
   };
 
-  const totalSaved = savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const totalTarget = savingsGoals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const getCategoryColor = (category) => {
+    const cat = goalCategories.find(c => c.value === category);
+    return cat ? cat.color : 'bg-gray-500';
+  };
+
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const completedGoals = goals.filter(goal => goal.currentAmount >= goal.targetAmount).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      <Navigation />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
-                <Target className="h-8 w-8 text-white" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                  Savings Goals
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                  Set goals, track progress, and achieve your financial dreams
-                </p>
-              </div>
-              <Dialog open={newGoalOpen} onOpenChange={setNewGoalOpen}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Savings Goals</h1>
+          <p className="text-lg text-gray-600">Turn your dreams into achievable financial goals</p>
+        </div>
+
+        {/* Overview Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Saved</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">KES {totalSaved.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Target</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">KES {totalTarget.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Active Goals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{goals.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Completed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{completedGoals}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="goals" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="goals">My Goals</TabsTrigger>
+            <TabsTrigger value="achievements">Achievements</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="goals" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Your Savings Goals</h2>
+              <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-green-500 to-blue-500">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Goal
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Goal
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Create New Savings Goal</DialogTitle>
                     <DialogDescription>
-                      Set up a new goal to start saving systematically
+                      Set up a new savings goal to track your progress
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="goal-name">Goal Name</Label>
-                      <Input id="goal-name" placeholder="e.g., Emergency Fund" />
+                      <Input
+                        id="goal-name"
+                        value={newGoal.name}
+                        onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+                        placeholder="e.g., Emergency Fund"
+                      />
                     </div>
                     <div>
-                      <Label htmlFor="goal-category">Category</Label>
-                      <Select>
+                      <Label htmlFor="target-amount">Target Amount (KES)</Label>
+                      <Input
+                        id="target-amount"
+                        type="number"
+                        value={newGoal.targetAmount}
+                        onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })}
+                        placeholder="50000"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="target-date">Target Date</Label>
+                      <Input
+                        id="target-date"
+                        type="date"
+                        value={newGoal.targetDate}
+                        onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={newGoal.category} onValueChange={(value) => setNewGoal({ ...newGoal, category: value })}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
                           {goalCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                            <SelectItem key={category.value} value={category.value}>
+                              {category.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="target-amount">Target Amount (KES)</Label>
-                        <Input id="target-amount" type="number" placeholder="100000" />
-                      </div>
-                      <div>
-                        <Label htmlFor="target-date">Target Date</Label>
-                        <Input id="target-date" type="date" />
-                      </div>
-                    </div>
                     <div>
-                      <Label htmlFor="monthly-amount">Monthly Contribution (KES)</Label>
-                      <Input id="monthly-amount" type="number" placeholder="10000" />
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Input
+                        id="description"
+                        value={newGoal.description}
+                        onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+                        placeholder="Brief description of your goal"
+                      />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Enable Auto-Save</Label>
-                        <p className="text-xs text-muted-foreground">Automatically save monthly</p>
-                      </div>
-                      <Switch />
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="auto-save"
+                        checked={newGoal.autoSave}
+                        onCheckedChange={(checked) => setNewGoal({ ...newGoal, autoSave: checked })}
+                      />
+                      <Label htmlFor="auto-save">Enable Auto-Save</Label>
                     </div>
                     <Button onClick={handleCreateGoal} className="w-full">
                       Create Goal
@@ -238,403 +311,199 @@ const SavingsGoalsPage = () => {
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
 
-          <Tabs defaultValue="goals" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="goals">My Goals</TabsTrigger>
-              <TabsTrigger value="progress">Progress</TabsTrigger>
-              <TabsTrigger value="autosave">Auto-Save</TabsTrigger>
-              <TabsTrigger value="achievements">Achievements</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="goals">
-              <div className="grid gap-6">
-                {/* Savings Overview */}
-                <div className="grid md:grid-cols-4 gap-6">
-                  <Card>
-                    <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {goals.map((goal) => {
+                const Icon = getCategoryIcon(goal.category);
+                const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
+                
+                return (
+                  <Card key={goal.id} className="relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 w-full h-2 ${getCategoryColor(goal.category)}`} />
+                    <CardHeader className="pb-4">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Saved</p>
-                          <p className="text-3xl font-bold text-green-600">
-                            KES {totalSaved.toLocaleString()}
-                          </p>
-                        </div>
-                        <Coins className="h-8 w-8 text-green-500" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Total Target</p>
-                          <p className="text-3xl font-bold text-blue-600">
-                            KES {totalTarget.toLocaleString()}
-                          </p>
-                        </div>
-                        <Target className="h-8 w-8 text-blue-500" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Active Goals</p>
-                          <p className="text-3xl font-bold text-purple-600">{savingsGoals.length}</p>
-                        </div>
-                        <CheckCircle className="h-8 w-8 text-purple-500" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Overall Progress</p>
-                          <p className="text-3xl font-bold text-orange-600">
-                            {Math.round((totalSaved / totalTarget) * 100)}%
-                          </p>
-                        </div>
-                        <TrendingUp className="h-8 w-8 text-orange-500" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Goals List */}
-                <div className="grid lg:grid-cols-2 gap-6">
-                  {savingsGoals.map((goal) => {
-                    const Icon = goal.icon;
-                    const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
-                    const timeRemaining = calculateTimeRemaining(goal.targetDate);
-                    
-                    return (
-                      <Card key={goal.id} className="overflow-hidden">
-                        <CardHeader className="pb-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-blue-100 rounded-lg">
-                                <Icon className="h-6 w-6 text-blue-600" />
-                              </div>
-                              <div>
-                                <CardTitle className="text-lg">{goal.name}</CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Badge className={getPriorityColor(goal.priority)}>
-                                    {goal.priority}
-                                  </Badge>
-                                  {goal.autoSave && (
-                                    <Badge variant="outline" className="text-green-600 border-green-300">
-                                      <Zap className="h-3 w-3 mr-1" />
-                                      Auto-Save
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <Button size="sm" variant="outline">
-                              <Edit className="h-3 w-3" />
-                            </Button>
+                        <div className="flex items-center space-x-2">
+                          <div className={`p-2 rounded-lg ${getCategoryColor(goal.category)} text-white`}>
+                            <Icon className="h-4 w-4" />
                           </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
                           <div>
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm text-muted-foreground">Progress</span>
-                              <span className="text-sm font-medium">{progress}%</span>
-                            </div>
-                            <Progress value={progress} className="h-3" />
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-lg font-bold text-green-600">
-                                KES {goal.currentAmount.toLocaleString()}
-                              </span>
-                              <span className="text-sm text-muted-foreground">
-                                of KES {goal.targetAmount.toLocaleString()}
-                              </span>
-                            </div>
+                            <CardTitle className="text-lg">{goal.name}</CardTitle>
+                            <CardDescription className="text-sm">{goal.description}</CardDescription>
                           </div>
-
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Monthly Contribution</p>
-                              <p className="font-medium">KES {goal.monthlyContribution.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Time Remaining</p>
-                              <p className="font-medium">{timeRemaining}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={() => handleContribute(goal.id, 5000)}
-                            >
-                              Add KES 5,000
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleContribute(goal.id, goal.monthlyContribution)}
-                            >
-                              Monthly Amount
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="progress">
-              <div className="grid gap-6">
-                {/* Progress Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Savings Progress Over Time</CardTitle>
-                    <CardDescription>Track your monthly savings growth</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={savingsProgress}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line 
-                            type="monotone" 
-                            dataKey="amount" 
-                            stroke="#22c55e" 
-                            strokeWidth={3}
-                            dot={{ fill: '#22c55e', strokeWidth: 2, r: 6 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Goal Distribution */}
-                <div className="grid lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Goals by Category</CardTitle>
+                        </div>
+                        {goal.autoSave && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Zap className="mr-1 h-3 w-3" />
+                            Auto
+                          </Badge>
+                        )}
+                      </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={savingsGoals.map(goal => ({
-                                name: goal.name,
-                                value: goal.currentAmount,
-                                fill: goal.color
-                              }))}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius={60}
-                              outerRadius={100}
-                              dataKey="value"
-                            />
-                            <Tooltip />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Savings Milestones</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <div>
-                            <p className="font-medium">First KES 100,000 Saved</p>
-                            <p className="text-sm text-muted-foreground">Achieved 3 months ago</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <div>
-                            <p className="font-medium">6 Months Consistent Saving</p>
-                            <p className="text-sm text-muted-foreground">Achieved last month</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                          <Clock className="h-5 w-5 text-gray-400" />
-                          <div>
-                            <p className="font-medium text-gray-600">First Goal Completion</p>
-                            <p className="text-sm text-muted-foreground">Coming soon!</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="autosave">
-              <div className="grid gap-6">
-                {/* Auto-Save Settings */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Zap className="h-5 w-5" />
-                      Auto-Save Settings
-                    </CardTitle>
-                    <CardDescription>
-                      Automate your savings to reach goals faster
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <CardContent className="space-y-4">
                       <div>
-                        <h4 className="font-medium">Enable Auto-Save</h4>
-                        <p className="text-sm text-muted-foreground">Automatically transfer money to your goals</p>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Progress</span>
+                          <span className="text-sm font-semibold">{progress.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={progress} className="h-3" />
                       </div>
-                      <Switch checked={autoSaveEnabled} onCheckedChange={setAutoSaveEnabled} />
-                    </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Saved</p>
+                          <p className="font-semibold text-green-600">KES {goal.currentAmount.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Target</p>
+                          <p className="font-semibold">KES {goal.targetAmount.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm">
+                        <p className="text-gray-600">Target Date</p>
+                        <p className="font-semibold">{new Date(goal.targetDate).toLocaleDateString()}</p>
+                      </div>
 
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        Auto-save transfers happen on the 1st of each month. Ensure sufficient balance in your account.
-                      </AlertDescription>
-                    </Alert>
-                  </CardContent>
-                </Card>
+                      <Separator />
 
-                {/* Auto-Save Goals */}
+                      <div className="flex space-x-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" className="flex-1">Add Money</Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-sm">
+                            <DialogHeader>
+                              <DialogTitle>Add to {goal.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="deposit-amount">Amount (KES)</Label>
+                                <Input
+                                  id="deposit-amount"
+                                  type="number"
+                                  placeholder="1000"
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      const amount = e.target.value;
+                                      if (amount) {
+                                        handleDeposit(goal.id, amount);
+                                        e.target.value = '';
+                                      }
+                                    }
+                                  }}
+                                />
+                              </div>
+                              <Button 
+                                onClick={() => {
+                                  const input = document.getElementById('deposit-amount');
+                                  const amount = input.value;
+                                  if (amount) {
+                                    handleDeposit(goal.id, amount);
+                                    input.value = '';
+                                  }
+                                }}
+                                className="w-full"
+                              >
+                                Add Money
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        <Button size="sm" variant="outline" className="px-3">
+                          <TrendingUp className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="achievements" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">Your Achievements</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {achievements.map((achievement) => {
+                  const Icon = achievement.icon;
+                  return (
+                    <Card key={achievement.id} className={`relative ${achievement.unlocked ? 'bg-gradient-to-r from-yellow-50 to-orange-50' : 'bg-gray-50'}`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center space-x-4">
+                          <div className={`p-3 rounded-full ${achievement.unlocked ? 'bg-yellow-500 text-white' : 'bg-gray-300 text-gray-500'}`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className={`font-semibold ${achievement.unlocked ? 'text-gray-900' : 'text-gray-500'}`}>
+                              {achievement.title}
+                            </h3>
+                            <p className={`text-sm ${achievement.unlocked ? 'text-gray-600' : 'text-gray-400'}`}>
+                              {achievement.description}
+                            </p>
+                          </div>
+                          {achievement.unlocked && (
+                            <Trophy className="h-5 w-5 text-yellow-500" />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">Savings Insights</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Goals with Auto-Save</CardTitle>
+                    <CardTitle className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5 text-green-500" />
+                      <span>Monthly Progress</span>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {savingsGoals.filter(goal => goal.autoSave).map((goal) => {
-                        const Icon = goal.icon;
-                        return (
-                          <div key={goal.id} className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
-                            <div className="flex items-center gap-4">
-                              <div className="p-2 bg-green-100 rounded-lg">
-                                <Icon className="h-5 w-5 text-green-600" />
-                              </div>
-                              <div>
-                                <h4 className="font-medium">{goal.name}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  KES {goal.monthlyContribution.toLocaleString()} monthly on 1st
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-green-100 text-green-800">Active</Badge>
-                              <Button size="sm" variant="outline">
-                                Edit
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      <div className="text-2xl font-bold text-green-600">
+                        KES 8,500
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Average monthly savings across all goals
+                      </p>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <span className="text-green-600">+12% from last month</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="achievements">
-              <div className="grid gap-6">
-                {/* Achievement Overview */}
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold">2</h3>
-                      <p className="text-muted-foreground">Achievements Earned</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Gift className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold">600</h3>
-                      <p className="text-muted-foreground">Reward Points</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <Target className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold">50%</h3>
-                      <p className="text-muted-foreground">Completion Rate</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Achievements List */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Your Achievements
+                    <CardTitle className="flex items-center space-x-2">
+                      <Target className="h-5 w-5 text-blue-500" />
+                      <span>Goal Completion Rate</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {achievements.map((achievement) => (
-                        <Card key={achievement.id} className={`${
-                          achievement.earned ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
-                        }`}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className={`p-2 rounded-full ${
-                                achievement.earned ? 'bg-yellow-100' : 'bg-gray-100'
-                              }`}>
-                                {achievement.earned ? (
-                                  <Trophy className="h-6 w-6 text-yellow-600" />
-                                ) : (
-                                  <Clock className="h-6 w-6 text-gray-400" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className={`font-medium ${
-                                  achievement.earned ? 'text-yellow-900' : 'text-gray-500'
-                                }`}>
-                                  {achievement.name}
-                                </h4>
-                                <p className={`text-sm ${
-                                  achievement.earned ? 'text-yellow-700' : 'text-gray-400'
-                                }`}>
-                                  {achievement.description}
-                                </p>
-                                <Badge variant="outline" className="mt-2">
-                                  {achievement.points} points
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                    <div className="space-y-4">
+                      <div className="text-2xl font-bold text-blue-600">
+                        68%
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Average progress across all active goals
+                      </p>
+                      <Progress value={68} className="h-2" />
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,9 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { AuthModal } from "@/components/AuthModal";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import LanguageSelector from "@/components/LanguageSelector";
+import AuthModal from "@/components/AuthModal";
+import NotificationCenter from "@/components/NotificationCenter";
 import {
   BarChart3,
   Users,

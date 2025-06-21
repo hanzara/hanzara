@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,14 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Loader2 } from 'lucide-react';
 
-interface AuthModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
+const AuthModal = () => {
   const { signIn, signUp, loading } = useAuth();
   const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -32,7 +28,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
     setIsSubmitting(true);
     try {
       await signIn(formData.email, formData.password);
-      onOpenChange(false);
+      setOpen(false);
       setFormData({ email: '', password: '', fullName: '', confirmPassword: '' });
     } catch (error) {
       // Error is handled in the auth hook
@@ -52,7 +48,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
     setIsSubmitting(true);
     try {
       await signUp(formData.email, formData.password, formData.fullName);
-      onOpenChange(false);
+      setOpen(false);
       setFormData({ email: '', password: '', fullName: '', confirmPassword: '' });
     } catch (error) {
       // Error is handled in the auth hook
@@ -64,7 +60,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   const isLoading = loading || isSubmitting;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="default">
+          {t('auth.join', 'Join Now')}
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{t('auth.join', 'Join Chama Circle')}</DialogTitle>
