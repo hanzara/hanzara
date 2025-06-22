@@ -1,4 +1,4 @@
-
+import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,7 +15,6 @@ import MakeContributionPage from "./pages/MakeContributionPage";
 import SchedulePaymentPage from "./pages/SchedulePaymentPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
 import LoanManagementPage from "./pages/LoanManagementPage";
 import VotingSystemPage from "./pages/VotingSystemPage";
 import InvestmentPage from "./pages/InvestmentPage";
@@ -24,10 +23,13 @@ import P2PTradingPage from "./pages/P2PTradingPage";
 import BlockchainLendingPage from "./pages/BlockchainLendingPage";
 import StakingPage from "./pages/StakingPage";
 import FinancialNavigatorPage from "./pages/FinancialNavigatorPage";
-import AdaptiveCreditPage from "./pages/AdaptiveC
-reditPage";
+import AdaptiveCreditPage from "./pages/AdaptiveCreditPage";
 import SmartWalletPage from "./pages/SmartWalletPage";
 import CommunityHubPage from "./pages/CommunityHubPage";
+import BorrowerDashboardPage from "./pages/BorrowerDashboardPage";
+import InvestorDashboardPage from "./pages/InvestorDashboardPage";
+import LoanApplicationForm from "./components/LoanApplicationForm";
+import RoleSelector from "./components/RoleSelector";
 
 const App = () => {
   console.log('App component rendering');
@@ -56,6 +58,16 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                
+                {/* Role Selection */}
+                <Route path="/select-role" element={<RoleSelector />} />
+                
+                {/* Borrower Routes */}
+                <Route path="/borrower-dashboard" element={<BorrowerDashboardPage />} />
+                <Route path="/apply-loan" element={<LoanApplicationForm />} />
+                
+                {/* Investor Routes */}
+                <Route path="/investor-dashboard" element={<InvestorDashboardPage />} />
                 
                 {/* AI Navigator Routes */}
                 <Route path="/financial-navigator" element={<FinancialNavigatorPage />} />

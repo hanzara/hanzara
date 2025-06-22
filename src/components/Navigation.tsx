@@ -10,6 +10,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import AuthModal from './AuthModal';
 import LanguageSelector from './LanguageSelector';
 import NotificationCenter from './NotificationCenter';
@@ -17,13 +18,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, Users, TrendingUp, Plus, LogOut, Bell, CreditCard, Vote, Smartphone, 
   ArrowLeftRight, Shield, Coins, Brain, Wallet, User, HelpCircle, 
-  ChevronDown, Target, BookOpen, MessageSquare
+  ChevronDown, Target, BookOpen, MessageSquare, FileText, DollarSign
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
+  const { hasRole, getPrimaryRole } = useUserRoles();
   const { t } = useLanguage();
   const { notifications } = useNotifications();
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ const Navigation = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
+  const primaryRole = getPrimaryRole();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -73,6 +76,51 @@ const Navigation = () => {
                     <Home className="h-4 w-4" />
                     {t('nav.home', 'Home')}
                   </Button>
+
+                  {/* Role-based navigation */}
+                  {hasRole('borrower') && (
+                    <NavigationMenu>
+                      <NavigationMenuList>
+                        <NavigationMenuItem>
+                          <NavigationMenuTrigger className={navItemClass('/borrower-dashboard')}>
+                            <CreditCard className="h-4 w-4" />
+                            Borrower
+                          </NavigationMenuTrigger>
+                          <NavigationMenuContent>
+                            <div className="grid w-[400px] gap-3 p-4">
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/borrower-dashboard')}
+                                className="justify-start"
+                              >
+                                <Target className="mr-2 h-4 w-4" />
+                                Dashboard
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/apply-loan')}
+                                className="justify-start"
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Apply for Loan
+                              </Button>
+                            </div>
+                          </NavigationMenuContent>
+                        </NavigationMenuItem>
+                      </NavigationMenuList>
+                    </NavigationMenu>
+                  )}
+
+                  {hasRole('investor') && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => navigate('/investor-dashboard')}
+                      className={navItemClass('/investor-dashboard')}
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                      Investor
+                    </Button>
+                  )}
 
                   {/* AI Navigator */}
                   <NavigationMenu>
@@ -183,53 +231,55 @@ const Navigation = () => {
                     Smart Wallet
                   </Button>
 
-                  {/* Chama Features */}
-                  <NavigationMenu>
-                    <NavigationMenuList>
-                      <NavigationMenuItem>
-                        <NavigationMenuTrigger className={navItemClass('/chamas')}>
-                          <Users className="h-4 w-4" />
-                          Chamas
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                            <Button
-                              variant="ghost"
-                              onClick={() => navigate('/chamas')}
-                              className="justify-start"
-                            >
-                              <Users className="mr-2 h-4 w-4" />
-                              My Chamas
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => navigate('/create-chama')}
-                              className="justify-start"
-                            >
-                              <Plus className="mr-2 h-4 w-4" />
-                              Create Chama
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => navigate('/make-contribution')}
-                              className="justify-start"
-                            >
-                              <CreditCard className="mr-2 h-4 w-4" />
-                              Contribute
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              onClick={() => navigate('/voting')}
-                              className="justify-start"
-                            >
-                              <Vote className="mr-2 h-4 w-4" />
-                              Voting
-                            </Button>
-                          </div>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    </NavigationMenuList>
-                  </NavigationMenu>
+                  {/* Chama Features - Only show if user has chama_member role */}
+                  {hasRole('chama_member') && (
+                    <NavigationMenu>
+                      <NavigationMenuList>
+                        <NavigationMenuItem>
+                          <NavigationMenuTrigger className={navItemClass('/chamas')}>
+                            <Users className="h-4 w-4" />
+                            Chamas
+                          </NavigationMenuTrigger>
+                          <NavigationMenuContent>
+                            <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/chamas')}
+                                className="justify-start"
+                              >
+                                <Users className="mr-2 h-4 w-4" />
+                                My Chamas
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/create-chama')}
+                                className="justify-start"
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create Chama
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/make-contribution')}
+                                className="justify-start"
+                              >
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Contribute
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                onClick={() => navigate('/voting')}
+                                className="justify-start"
+                              >
+                                <Vote className="mr-2 h-4 w-4" />
+                                Voting
+                              </Button>
+                            </div>
+                          </NavigationMenuContent>
+                        </NavigationMenuItem>
+                      </NavigationMenuList>
+                    </NavigationMenu>
+                  )}
 
                   {/* Trading & Investment */}
                   <NavigationMenu>
@@ -307,6 +357,13 @@ const Navigation = () => {
               
               {user ? (
                 <div className="flex items-center space-x-4">
+                  {/* Role Badge */}
+                  {primaryRole && (
+                    <Badge variant="outline" className="capitalize">
+                      {primaryRole.replace('_', ' ')}
+                    </Badge>
+                  )}
+
                   {/* Notification Bell */}
                   <Button
                     variant="ghost"
@@ -328,6 +385,19 @@ const Navigation = () => {
                   <span className="text-sm text-gray-600">
                     {t('nav.welcome', 'Welcome')}, {user.email?.split('@')[0]}
                   </span>
+
+                  {/* Role Selection */}
+                  {!primaryRole && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/select-role')}
+                      className="flex items-center gap-2 text-primary border-primary"
+                    >
+                      <User className="h-4 w-4" />
+                      Select Role
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     onClick={handleSignOut}
