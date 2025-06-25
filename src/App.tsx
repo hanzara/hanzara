@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,8 +23,7 @@ import P2PTradingPage from "./pages/P2PTradingPage";
 import BlockchainLendingPage from "./pages/BlockchainLendingPage";
 import StakingPage from "./pages/StakingPage";
 import FinancialNavigatorPage from "./pages/FinancialNavigatorPage";
-import AdaptiveCreditPage from "./pages/AdaptiveC
-reditPage";
+import AdaptiveCreditPage from "./pages/AdaptiveCreditPage";
 import SmartWalletPage from "./pages/SmartWalletPage";
 import CommunityHubPage from "./pages/CommunityHubPage";
 
