@@ -7,74 +7,32 @@ import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Users, Calendar } from
 import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import CurrencyDisplay from '@/components/CurrencyDisplay';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useAnalyticsData } from '@/hooks/useAnalyticsData';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 const AnalyticsPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const { data: analyticsData, isLoading, error } = useAnalyticsData();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Loading your analytics...</div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-red-600">Error loading analytics data</div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  const {
-    totalSavings = 0,
-    monthlyGrowth = 0,
-    activeChamasCount = 0,
-    contributionTrends = [],
-    chamaPerformance = [],
-    recentActivities = []
-  } = analyticsData || {};
-
-  // Calculate next payment days (simplified)
-  const nextPaymentDays = Math.floor(Math.random() * 30) + 1;
-
-  // Goal progress (using real data for available goals)
-  const goalProgress = [
-    { 
-      name: t('goals.house', 'House Deposit'), 
-      current: totalSavings * 0.6, 
-      target: totalSavings > 0 ? totalSavings * 2 : 500000, 
-      color: '#3b82f6' 
-    },
-    { 
-      name: t('goals.emergency', 'Emergency Fund'), 
-      current: totalSavings * 0.8, 
-      target: totalSavings > 0 ? totalSavings * 1.2 : 100000, 
-      color: '#10b981' 
-    },
-    { 
-      name: t('goals.business', 'Business Capital'), 
-      current: totalSavings * 0.3, 
-      target: totalSavings > 0 ? totalSavings * 1.5 : 200000, 
-      color: '#f59e0b' 
-    }
+  const contributionData = [
+    { month: 'Jan', amount: 5000 },
+    { month: 'Feb', amount: 5000 },
+    { month: 'Mar', amount: 5000 },
+    { month: 'Apr', amount: 8000 },
+    { month: 'May', amount: 8000 },
+    { month: 'Jun', amount: 8000 }
   ];
+
+  const chamaPerformance = [
+    { name: 'Unity Savings', contributions: 45000, members: 12 },
+    { name: 'School Fees', contributions: 24000, members: 8 }
+  ];
+
+  const goalProgress = [
+    { name: 'House Deposit', current: 120000, target: 500000, color: '#3b82f6' },
+    { name: 'Emergency Fund', current: 85000, target: 100000, color: '#10b981' },
+    { name: 'Business Capital', current: 45000, target: 200000, color: '#f59e0b' }
+  ];
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
@@ -90,8 +48,8 @@ const AnalyticsPage = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{t('analytics.title', 'Analytics Dashboard')}</h1>
-            <p className="text-muted-foreground">{t('analytics.subtitle', 'Track your financial progress')}</p>
+            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">Track your financial progress</p>
           </div>
         </div>
 
@@ -100,57 +58,51 @@ const AnalyticsPage = () => {
           <div className="grid gap-6 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('analytics.total.savings', 'Total Savings')}</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Savings</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <CurrencyDisplay amount={totalSavings} className="text-2xl font-bold" showToggle={false} />
+                <CurrencyDisplay amount={336000} className="text-2xl font-bold" showToggle={false} />
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  {monthlyGrowth >= 0 ? (
-                    <TrendingUp className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 text-red-500" />
-                  )}
-                  {Math.abs(monthlyGrowth).toFixed(1)}% from last month
+                  <TrendingUp className="h-3 w-3 text-green-500" />
+                  +12% from last month
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('analytics.monthly.growth', 'Monthly Growth')}</CardTitle>
+                <CardTitle className="text-sm font-medium">Monthly Growth</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{Math.abs(monthlyGrowth).toFixed(1)}%</div>
+                <div className="text-2xl font-bold">18.5%</div>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <TrendingUp className="h-3 w-3 text-green-500" />
-                  {t('analytics.annual.return', 'Annual return rate')}
+                  Annual return rate
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('analytics.active.chamas', 'Active Chamas')}</CardTitle>
+                <CardTitle className="text-sm font-medium">Active Chamas</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{activeChamasCount}</div>
-                <p className="text-xs text-muted-foreground">
-                  {activeChamasCount > 0 ? t('analytics.performing.well', 'All performing well') : t('analytics.no.chamas', 'No active chamas')}
-                </p>
+                <div className="text-2xl font-bold">2</div>
+                <p className="text-xs text-muted-foreground">Both performing well</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{t('analytics.next.payment', 'Next Payment')}</CardTitle>
+                <CardTitle className="text-sm font-medium">Next Payment</CardTitle>
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{nextPaymentDays}</div>
-                <p className="text-xs text-muted-foreground">{t('analytics.days.remaining', 'Days remaining')}</p>
+                <div className="text-2xl font-bold">3</div>
+                <p className="text-xs text-muted-foreground">Days remaining</p>
               </CardContent>
             </Card>
           </div>
@@ -159,49 +111,37 @@ const AnalyticsPage = () => {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>{t('analytics.contribution.trends', 'Contribution Trends')}</CardTitle>
-                <CardDescription>{t('analytics.monthly.contributions', 'Your monthly contributions over time')}</CardDescription>
+                <CardTitle>Contribution Trends</CardTitle>
+                <CardDescription>Your monthly contributions over time</CardDescription>
               </CardHeader>
               <CardContent>
-                {contributionTrends.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={contributionTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`KES ${value}`, 'Amount']} />
-                      <Line type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    {t('analytics.no.data', 'No contribution data available')}
-                  </div>
-                )}
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={contributionData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`KES ${value}`, 'Amount']} />
+                    <Line type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('analytics.chama.performance', 'Chama Performance')}</CardTitle>
-                <CardDescription>{t('analytics.contributions.by.chama', 'Contributions by Chama group')}</CardDescription>
+                <CardTitle>Chama Performance</CardTitle>
+                <CardDescription>Contributions by Chama group</CardDescription>
               </CardHeader>
               <CardContent>
-                {chamaPerformance.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chamaPerformance}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`KES ${value}`, 'Contributions']} />
-                      <Bar dataKey="contributions" fill="#10b981" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                    {t('analytics.no.chama.data', 'No chama data available')}
-                  </div>
-                )}
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chamaPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => [`KES ${value}`, 'Contributions']} />
+                    <Bar dataKey="contributions" fill="#10b981" />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
@@ -209,8 +149,8 @@ const AnalyticsPage = () => {
           {/* Goal Progress */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('analytics.financial.goals', 'Financial Goals Progress')}</CardTitle>
-              <CardDescription>{t('analytics.track.progress', 'Track your progress towards financial milestones')}</CardDescription>
+              <CardTitle>Financial Goals Progress</CardTitle>
+              <CardDescription>Track your progress towards financial milestones</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -224,7 +164,7 @@ const AnalyticsPage = () => {
                           <CurrencyDisplay amount={goal.current} showToggle={false} /> / <CurrencyDisplay amount={goal.target} showToggle={false} />
                         </span>
                       </div>
-                      <Progress value={Math.min(progress, 100)} className="h-2" />
+                      <Progress value={progress} className="h-2" />
                       <p className="text-xs text-muted-foreground">
                         {progress.toFixed(1)}% complete
                       </p>
@@ -238,28 +178,31 @@ const AnalyticsPage = () => {
           {/* Recent Activity Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('analytics.recent.activity', 'Recent Activity Summary')}</CardTitle>
+              <CardTitle>Recent Activity Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentActivities.length > 0 ? (
-                  recentActivities.map((activity, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <div>
-                          <p className="font-medium">{t('analytics.contribution.made', 'Contribution Made')}</p>
-                          <p className="text-sm text-muted-foreground">{activity.description} - {new Date(activity.date).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <CurrencyDisplay amount={activity.amount} showToggle={false} className="font-medium text-green-600" />
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div>
+                      <p className="font-medium">Contribution Made</p>
+                      <p className="text-sm text-muted-foreground">Unity Savings Group - Jan 15</p>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    {t('analytics.no.recent.activity', 'No recent activity found')}
                   </div>
-                )}
+                  <CurrencyDisplay amount={5000} showToggle={false} className="font-medium text-green-600" />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div>
+                      <p className="font-medium">Payout Received</p>
+                      <p className="text-sm text-muted-foreground">School Fees Chama - Jan 10</p>
+                    </div>
+                  </div>
+                  <CurrencyDisplay amount={24000} showToggle={false} className="font-medium text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
