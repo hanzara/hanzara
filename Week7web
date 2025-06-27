@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS3 Transitions, Animations, and JavaScript Functions</title>
+  <link rel="stylesheet" href="styles.css">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 50px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #4CAF50;
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  margin: 20px auto;
+  background-color: lightblue;
+  transition: transform 1s, background-color 0.5s;
+}
+
+/* Animation */
+@keyframes boxAnimation {
+  0% {
+    transform: scale(1);
+    background-color: lightblue;
+  }
+  50% {
+    transform: scale(1.5);
+    background-color: lightcoral;
+  }
+  100% {
+    transform: scale(1);
+    background-color: lightblue;
+  }
+}
+
+.animate {
+  animation: boxAnimation 2s ease-in-out;
+}
+</style>
+</head>
+<body>
+
+  <button id="animateBtn">Click Me to Animate</button>
+  <div id="animatedBox" class="box"></div>
+  
+  <label for="colorPicker">Choose your favorite color:</label>
+  <input type="color" id="colorPicker">
+
+  <script src="script.js">
+// Get elements
+const animateBtn = document.getElementById('animateBtn');
+const animatedBox = document.getElementById('animatedBox');
+const colorPicker = document.getElementById('colorPicker');
+
+// Check if there's a saved color preference
+if(localStorage.getItem('favoriteColor')) {
+  document.body.style.backgroundColor = localStorage.getItem('favoriteColor');
+  colorPicker.value = localStorage.getItem('favoriteColor');
+}
+
+// Store user preferences in localStorage
+colorPicker.addEventListener('input', (e) => {
+  const selectedColor = e.target.value;
+  localStorage.setItem('favoriteColor', selectedColor);
+  document.body.style.backgroundColor = selectedColor;
+});
+
+// Trigger animation on button click
+animateBtn.addEventListener('click', () => {
+  animatedBox.classList.add('animate');
+  
+  // Remove animation class after it finishes (so it can be triggered again)
+  setTimeout(() => {
+    animatedBox.classList.remove('animate');
+  }, 2000); // Matches the animation duration
+});
+</script>
+</body>
+</html>

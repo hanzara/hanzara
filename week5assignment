@@ -1,0 +1,63 @@
+# Base class
+class Superhero:
+    def __init__(self, name, power, level):
+        self.name = name
+        self._power = power  # Encapsulated attribute
+        self.level = level
+
+    def display_info(self):
+        print(f"Name: {self.name}, Power: {self._power}, Level: {self.level}")
+
+    def use_power(self):
+        print(f"{self.name} uses {self._power}!")
+
+# Inherited class
+class FlyingSuperhero(Superhero):
+    def __init__(self, name, power, level, flight_speed):
+        super().__init__(name, power, level)
+        self.flight_speed = flight_speed
+
+    def use_power(self):
+        print(f"{self.name} flies at {self.flight_speed} km/h using {self._power}!")
+
+# Creating objects
+hero1 = Superhero("Invisiboy", "Invisibility", 5)
+hero2 = FlyingSuperhero("SkyQueen", "Air Control", 8, 250)
+
+# Output
+hero1.display_info()
+hero1.use_power()
+
+print("---")
+
+hero2.display_info()
+hero2.use_power()
+
+
+
+
+
+second activity
+# Base class
+class Vehicle:
+    def move(self):
+        print("The vehicle moves.")
+
+# Subclasses
+class Car(Vehicle):
+    def move(self):
+        print("Driving 🚗")
+
+class Plane(Vehicle):
+    def move(self):
+        print("Flying ✈️")
+
+class Boat(Vehicle):
+    def move(self):
+        print("Sailing 🚢")
+
+# Polymorphism in action
+vehicles = [Car(), Plane(), Boat()]
+
+for v in vehicles:
+    v.move()

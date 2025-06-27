@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Website</title>
+  <style>
+    /* General styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 15px;
+    }
+
+    nav ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    nav ul li {
+      display: inline;
+      margin-right: 15px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .intro p {
+      font-size: 18px;
+    }
+
+    .image-slider {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #nextButton {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #nextButton:hover {
+      background-color: #555;
+    }
+
+    .contact-form {
+      margin-top: 20px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="home">
+    <section class="intro">
+      <h1>Welcome to My Website</h1>
+      <p>This is the homepage of our amazing multipage website!</p>
+    </section>
+
+    <section class="image-slider">
+      <div class="slider">
+        <img src="image1.jpg" alt="Image 1" id="slideImage">
+      </div>
+      <button id="nextButton">Next</button>
+    </section>
+  </main>
+
+  <main id="about" style="display:none;">
+    <section class="about">
+      <h1>About Us</h1>
+      <p>This is an example of the About page. Here you can introduce your website and team.</p>
+    </section>
+  </main>
+
+  <main id="contact" style="display:none;">
+    <section class="contact-form">
+      <h1>Contact Us</h1>
+      <form id="contactForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea>
+
+        <button type="submit">Submit</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 My Website</p>
+  </footer>
+
+  <script>
+    // Navigation
+    document.querySelectorAll('nav ul li a').forEach(link => {
+      link.addEventListener('click', function(event) {
+        event.preventDefault();
+        const sectionId = link.getAttribute('href').slice(1);
+        document.querySelectorAll('main').forEach(main => {
+          main.style.display = 'none';
+        });
+        document.getElementById(sectionId).style.display = 'block';
+      });
+    });
+
+    // Image Slider functionality
+    let currentImageIndex = 0;
+    const images = ['image1.jpg', 'image2.jpg', 'image3.jpg'];
+
+    const nextButton = document.getElementById('nextButton');
+    const slideImage = document.getElementById('slideImage');
+
+    nextButton.addEventListener('click', function() {
+      currentImageIndex = (currentImageIndex + 1) % images.length;
+      slideImage.src = images[currentImageIndex];
+    });
+
+    // Contact Form Validation
+    const contactForm = document.getElementById('contactForm');
+
+    contactForm.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const message = document.getElementById('message').value;
+
+      if (!name || !email || !message) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      alert('Message submitted successfully!');
+      contactForm.reset();
+    });
+  </script>
+</body>
+</html>
